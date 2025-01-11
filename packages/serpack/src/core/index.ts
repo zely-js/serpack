@@ -1,9 +1,9 @@
 /* eslint-disable default-param-last */
-import { dirname, join, parse as parsePath, relative } from 'path';
+import { dirname, extname, join, parse as parsePath, relative } from 'path';
 import { readFileSync } from 'fs';
 
 import { transform } from '@swc/core';
-import { debug } from '@serpack/logger';
+import { debug, error } from '@serpack/logger';
 import type { Options as ParseOptions } from 'acorn';
 import { parse } from 'acorn';
 import { ResolverFactory, NapiResolveOptions } from 'oxc-resolver';
@@ -17,6 +17,7 @@ import {
   __SERPACK_MODULE_CACHE__,
   __SERPACK_REQUIRE__,
 } from './functions';
+import { load } from './loader';
 
 const MODULE_EXT = ['cjs', 'mjs', 'js', 'cts', 'mts', 'ts', 'jsx', 'tsx'];
 const TS_EXT = ['ts', 'cts', 'mts', 'tsx'];
@@ -32,6 +33,8 @@ export interface CompilerOptions {
 
   /** `oxc-resolver` options */
   resolverOptions?: NapiResolveOptions;
+
+  type?: 'script' | 'module';
 }
 
 class Compiler {
@@ -79,6 +82,23 @@ class Compiler {
   async transform(filename: string = this.entry) {
     const source =
       filename !== this.entry ? readFileSync(filename, 'utf-8') : this.source;
+
+    if (!MODULE_EXT.includes(extname(filename).slice(1))) {
+      const target = filename.replace(/\\/g, '/');
+
+      if (this.parserOptions?.type === 'script') {
+        return {
+          code: `module.exports=/*export*/${__NON_SERPACK_REQUIRE__}(\`./$\{${__SERPACK_REQUIRE__}("path").relative(__dirname, "${target}").replace(/\\\\/g, '/')}\`);`,
+          map: {},
+        };
+      }
+
+      if (!this.parserOptions?.type || this.parserOptions?.type === 'module') {
+        return { code: load(target, source), map: {} };
+      }
+
+      error(`unknown options.type: ${this.parserOptions?.type}`);
+    }
 
     const output = await transform(source, {
       filename,
@@ -172,12 +192,6 @@ class Compiler {
   }
 
   parseModule(filename: string, sourcecode?: string, parserOptions?: CompilerOptions) {
-    const ext = parsePath(filename).ext.slice(1);
-
-    // Not a module file
-    // TODO: Add support for json, etc.
-    if (!MODULE_EXT.includes(ext)) return;
-
     const source = sourcecode ?? readFileSync(filename, 'utf-8');
 
     const ast = parse(source, {
@@ -275,7 +289,7 @@ class Compiler {
       `    ${__SERPACK_MODULE_CACHE__}[id.slice(3)]=module.exports;`,
       '    return module.exports;',
       '  }',
-      `  return ${__SERPACK_REQUIRE__}("sp:0")`,
+      `  module.exports=${__SERPACK_REQUIRE__}("sp:0")`,
       '})({',
     ];
 
