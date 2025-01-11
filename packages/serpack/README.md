@@ -16,11 +16,14 @@ By default, serpack is built to run Javascript/Typescript, but it also supports 
 $ serpack <path>
 ```
 
-| Option            | Description                               | Default        |
-| ----------------- | ----------------------------------------- | -------------- |
-| `--no-run`        | only build file                           | `false`        |
-| `--output, -o`    | provide outfile path                      | `"cache.~.js"` |
-| `--sourcemap, -s` | provide sourcemap path **(experimental)** | `false`        |
+| Option            | Description                               | Default        | Type                  |
+| ----------------- | ----------------------------------------- | -------------- | --------------------- |
+| `--no-run`        | only build file                           | `false`        | `boolean`             |
+| `--output, -o`    | provide outfile path                      | `"cache.~.js"` | `string`              |
+| `--sourcemap, -s` | provide sourcemap path **(experimental)** | `false`        | `boolean` \| `string` |
+| `--cli`           | whether js file is cli app                | `false`        | `boolean`             |
+
+> TIP: A flag with a boolean type as its value, such as `--cli`, must specify true or false as `--cli=true`
 
 ## APIs
 
@@ -38,11 +41,12 @@ compile('foo/bar.ts', {
 });
 ```
 
-| Option            | Description              | Default |
-| ----------------- | ------------------------ | ------- |
-| `parserOptions`   | Acorn parse options      | `{}`    |
-| `globals`         | Global variable settings |         |
-| `resolverOptions` | oxc-resolver options     | `{}`    |
+| Option            | Description                    | Default  |
+| ----------------- | ------------------------------ | -------- |
+| `parserOptions`   | Acorn parse options            | `{}`     |
+| `globals`         | Global variable settings (swc) |          |
+| `resolverOptions` | oxc-resolver options           | `{}`     |
+| `type`            | Type (`script` \| `module`)    | `module` |
 
 > 🚧 The sourcemap generation is still under development.
 
@@ -53,6 +57,15 @@ Convert `ImportStatement` to require.
 ```ts
 const requireNode = importToRequire(node);
 ```
+
+## Supported Extensions
+
+- **JavaScript**: `js`, `cjs`,`mjs`, `jsx`
+- **TypeScript**: `ts`, `cts`, `mts`, `tsx`
+- **JSON**: `json`
+
+> TIP: If you want to load the file regardless of whether its extension is supported, set `options.type`to `script`.  
+> In `module` mode, extension support is checked, but in `script` mode, it is loaded **unconditionally**.
 
 ## LICENSE
 
