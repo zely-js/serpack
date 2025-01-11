@@ -35,6 +35,9 @@ export interface CompilerOptions {
   resolverOptions?: NapiResolveOptions;
 
   type?: 'script' | 'module';
+
+  banner?: string;
+  footer?: string;
 }
 
 class Compiler {
@@ -278,6 +281,8 @@ class Compiler {
       return lines.join('');
     };
 
+    if (this.parserOptions?.banner) codeLines.push(this.parserOptions.banner);
+
     const wrapperHeader = [
       '(function(modules) {',
       `  var ${__SERPACK_MODULE_CACHE__}={};`,
@@ -295,7 +300,7 @@ class Compiler {
 
     codeLines.push(wrapperHeader.join('\n'));
 
-    let currentLine = wrapperHeader.length + 1;
+    let currentLine = codeLines.join('\n').split('\n').length + 1;
 
     // Process each module and track line numbers
     for (const [index, module] of Object.keys(modules).entries()) {
@@ -328,6 +333,8 @@ class Compiler {
     }
 
     codeLines.push('});');
+
+    if (this.parserOptions?.footer) codeLines.push(this.parserOptions.footer);
 
     return {
       code: codeLines.join('\n'),
