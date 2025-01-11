@@ -270,7 +270,7 @@ class Compiler {
     const sections = [];
     const codeLines = [];
 
-    const createModule = (file: string, code: string): string => {
+    const createModule = (file: string, code: string): [string, number] => {
       const lines = [
         `${JSON.stringify(
           this.id[file]
@@ -278,7 +278,7 @@ class Compiler {
         `{${code.replace(/"/g, '\\"')}}`,
       ];
 
-      return lines.join('');
+      return [lines.join(''), lines.slice(0, 1).join('').length];
     };
 
     if (this.parserOptions?.banner) codeLines.push(this.parserOptions.banner);
@@ -300,23 +300,17 @@ class Compiler {
 
     codeLines.push(wrapperHeader.join('\n'));
 
-    let currentLine = codeLines.join('\n').split('\n').length + 1;
+    let currentLine = codeLines.join('\n').split('\n').length + 2;
 
     // Process each module and track line numbers
     for (const [index, module] of Object.keys(modules).entries()) {
-      const moduleCode = createModule(module, modules[module].code);
-      const moduleLine = `/*[${index}]${relative(process.cwd(), module)}*/${moduleCode},`;
+      const [moduleCode, moduleLength] = createModule(module, modules[module].code);
+      let moduleLine = `/*[${index}]${relative(process.cwd(), module)}*/`;
 
       sections.push({
         offset: {
           line: currentLine,
-          column:
-            `${JSON.stringify(
-              this.id[module]
-            )}:(${__SERPACK_REQUIRE__},${__NON_SERPACK_REQUIRE__},module,exports)=>{`
-              .length +
-            `/*[${index}]${relative(process.cwd(), module)}*/`.length +
-            1,
+          column: moduleLength + moduleLine.length + 1,
         },
         map: {
           version: 3,
@@ -327,6 +321,8 @@ class Compiler {
           mappings: modules[module].map.mappings,
         },
       });
+
+      moduleLine += `${moduleCode},`;
 
       codeLines.push(moduleLine);
       currentLine += 1;
