@@ -6,7 +6,7 @@ import { join, relative } from 'path';
 import { debug } from '@serpack/logger';
 
 import pkg from '../package.json';
-import { compile } from '.';
+import { compile, CompilerOptions } from '.';
 
 const app = program('serpack');
 
@@ -15,6 +15,7 @@ app.version(pkg.version);
 app
   .option('--no-run', 'only bundle file')
   .option('--output, -o', 'provide outfile path')
+  .option('--cli', 'whether js app is cli')
   .option('--sourcemap, -s', '(experimental) provide sourcemap path');
 
 app.action(async (command) => {
@@ -23,7 +24,11 @@ app.action(async (command) => {
 
   debug(`[serpack:cli] args: ${JSON.stringify(command)}`);
 
-  const output = await compile(path);
+  const options: CompilerOptions = {
+    banner: command.cli ? '#!/usr/bin/env node' : '',
+  };
+
+  const output = await compile(path, options);
   let target;
 
   if (command.output) {

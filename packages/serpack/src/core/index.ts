@@ -300,7 +300,7 @@ class Compiler {
 
     codeLines.push(wrapperHeader.join('\n'));
 
-    let currentLine = codeLines.join('\n').split('\n').length + 2;
+    let currentLine = codeLines.join('\n').split('\n').length + 1;
 
     // Process each module and track line numbers
     for (const [index, module] of Object.keys(modules).entries()) {
@@ -310,7 +310,7 @@ class Compiler {
       sections.push({
         offset: {
           line: currentLine,
-          column: moduleLength + moduleLine.length + 1,
+          column: moduleLength + moduleLine.length + 2,
         },
         map: {
           version: 3,
