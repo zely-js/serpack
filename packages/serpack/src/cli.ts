@@ -42,7 +42,7 @@ app.action(async (command) => {
   writeFileSync(target, output.code);
 
   if (!command['no-run']) {
-    require(relative(__dirname, target).replace(/\\/g, '/'));
+    require(`./${relative(__dirname, target).replace(/\\/g, '/')}`);
   }
 
   if (!command.output) {
