@@ -1,0 +1,30 @@
+{
+  "private": true,
+  "workspaces": [
+    "packages/**/*"
+  ],
+  "devDependencies": {
+    "@swc-node/register": "^1.10.9",
+    "@swc/core": "^1.7.3",
+    "@types/escodegen": "^0.0.10",
+    "@types/node": "^18.11.10",
+    "@typescript-eslint/eslint-plugin": "^5.62.0",
+    "@typescript-eslint/parser": "^5.36.1",
+    "esbuild": "^0.18.14",
+    "esbuild-node-externals": "^1.8.0",
+    "escodegen": "^2.1.0",
+    "eslint": "^8.43.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.4",
+    "glob": "^11.0.0",
+    "typescript": "^5.6.2",
+    "vite-tsconfig-paths": "4.3.2",
+    "vitest": "^2.1.8"
+  },
+  "scripts": {
+    "build": "node -r @swc-node/register scripts/build.ts",
+    "lint-fix": "eslint --fix --ext .js,.ts .",
+    "test": "vitest"
+  },
+  "version": "0.0.0"
+}

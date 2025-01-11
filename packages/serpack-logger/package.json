@@ -1,0 +1,13 @@
+{
+  "name": "@serpack/logger",
+  "version": "0.0.0",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "colors": "^1.4.0"
+  }
+}

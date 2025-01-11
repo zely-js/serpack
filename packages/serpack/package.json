@@ -1,0 +1,22 @@
+{
+  "name": "serpack",
+  "version": "0.1.0",
+  "bin": "./dist/cli.js",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "description": "JavaScript/TypeScript tool for application development.",
+  "files": [
+    "dist"
+  ],
+  "repository": "https://github.com/do4ng/serpack/",
+  "dependencies": {
+    "@serpack/logger": "0.0.0",
+    "@swc/core": "^1.10.4",
+    "acorn": "^8.14.0",
+    "animaux": "^0.0.4",
+    "escodegen": "^2.1.0",
+    "estree-walker": "2.0.2",
+    "oxc-resolver": "^3.0.3"
+  }
+}
