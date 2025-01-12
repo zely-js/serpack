@@ -3,12 +3,18 @@
 Serpack is a JavaScript/TypeScript tool for application development.
 
 ```bash
-$ npx serpack ./src/index.ts
+$ npx serpack ./src/awesome-app.ts # run script
 ```
 
-serpack is a tool for developing Javascript/typescript applications. It is designed for high-speed bundling and executing typescript files.
+Serpack is optimized for high-speed bundling and execution of TypeScript files, leveraging [swc](https://swc.rs/) as a transformer and [oxc](https://oxc.rs/) as a resolver for enhanced performance.
 
 By default, serpack is built to run Javascript/Typescript, but it also supports module bundling!
+
+## Features
+
+- ⚡ **Lightning Fast**: Your JavaScript/TypeScript file will be compiled it in the blink of an eye.
+- 📦 **Module Bunling**: Bundle multiple files into one file.
+- 🚀 **TypeScript Supported**: TypeScript compilation is also possible.
 
 ## CLI
 
@@ -47,6 +53,8 @@ compile('foo/bar.ts', {
 | `globals`         | Global variable settings (swc) |          |
 | `resolverOptions` | oxc-resolver options           | `{}`     |
 | `type`            | Type (`script` \| `module`)    | `module` |
+| `banner`          | banner                         | `""`     |
+| `footer`          | footer                         | `""`     |
 
 > 🚧 The sourcemap generation is still under development.
 
@@ -65,7 +73,7 @@ const requireNode = importToRequire(node);
 - **JSON**: `json`
 
 > TIP: If you want to load the file regardless of whether its extension is supported, set `options.type`to `script`.  
-> In `module` mode, extension support is checked, but in `script` mode, it is loaded **unconditionally**.
+> In `module` mode, extension support is checked strictly, but in `script` mode, it is loaded **unconditionally**.
 
 ## LICENSE
 
