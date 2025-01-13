@@ -1,12 +1,12 @@
 /* eslint-disable default-param-last */
 import { dirname, extname, join, parse as parsePath, relative } from 'path';
-import { existsSync, readFileSync } from 'fs';
+import { readFileSync } from 'fs';
 
 import { transform } from '@swc/core';
 import { debug, error } from '@serpack/logger';
 import type { Options as ParseOptions } from 'acorn';
 import { parse } from 'acorn';
-import { ResolverFactory, NapiResolveOptions, TsconfigOptions } from 'oxc-resolver';
+import { ResolverFactory, NapiResolveOptions } from 'oxc-resolver';
 import { walk } from 'estree-walker';
 import { generate } from 'escodegen';
 
@@ -15,7 +15,6 @@ import { importToRequire } from './parse';
 import {
   __NON_SERPACK_REQUIRE__,
   __SERPACK_MODULE_CACHE__,
-  __SERPACK_MODULE_PENDING__,
   __SERPACK_REQUIRE__,
 } from './functions';
 import { load } from './loader';
@@ -32,14 +31,6 @@ export interface CompilerOptions {
     env?: Record<string, string>;
   };
 
-  optimizer?: {
-    /**
-     * requirement: `@swc/helpers`
-     *
-     * reference - https://swc.rs/docs/configuration/compilation#jscexternalhelpers */
-    externalHelper?: boolean;
-  };
-
   /** `oxc-resolver` options */
   resolverOptions?: NapiResolveOptions;
 
@@ -47,6 +38,8 @@ export interface CompilerOptions {
 
   banner?: string;
   footer?: string;
+
+  forceExternal?: string[];
 }
 
 class Compiler {
@@ -83,21 +76,10 @@ class Compiler {
 
     this.id = {};
 
-    let tsconfig = {};
-
-    if (existsSync(join(process.cwd(), 'tsconfig.json'))) {
-      tsconfig = {
-        tsconfig: {
-          configFile: join(process.cwd(), 'tsconfig.json'),
-        } satisfies TsconfigOptions,
-      };
-    }
-
     this.resolver = new ResolverFactory({
       conditionNames: ['node', 'import'],
       mainFields: ['module', 'main'],
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json', '.d.ts'],
-      ...tsconfig,
       ...this.resolverOptions,
     });
   }
@@ -134,7 +116,7 @@ class Compiler {
         strict: false,
       },
       jsc: {
-        externalHelpers: this.parserOptions?.optimizer?.externalHelper || false,
+        // externalHelpers: true,
         parser: {
           syntax: this.sourceType === 'typescript' ? 'typescript' : 'ecmascript',
         },
@@ -159,6 +141,11 @@ class Compiler {
   resolve(dirname: string = process.cwd(), to: string) {
     const target = this.resolver.sync(dirname, to).path;
 
+    if (this.parserOptions?.forceExternal?.includes(to)) {
+      debug(`Resolving module: ${target} [rejected - externals]`);
+      return;
+    }
+
     if (builtinModules.includes(target)) {
       debug(`Resolving module: ${target} [rejected - builtin]`);
       return;
@@ -170,7 +157,7 @@ class Compiler {
     }
 
     if (!target) {
-      debug(`Resolving module: ${target} [failed - ${to}]`);
+      debug(`Resolving module: ${target} [failed]`);
       return;
     }
 
@@ -290,8 +277,6 @@ class Compiler {
     const sections = [];
     const codeLines = [];
 
-    debug(JSON.stringify(this.id));
-
     const createModule = (file: string, code: string): [string, number] => {
       const lines = [
         `${JSON.stringify(
@@ -312,7 +297,6 @@ class Compiler {
       '    if (!id.startsWith("sp:")) return require(id);',
       `    if (${__SERPACK_MODULE_CACHE__}[id.slice(3)]) return ${__SERPACK_MODULE_CACHE__}[id.slice(3)];`,
       '    const module={exports:{}};',
-      `    ${__SERPACK_MODULE_CACHE__}[id.slice(3)]="${__SERPACK_MODULE_PENDING__}";`,
       `    modules[id.slice(3)].call(module.exports, ${__SERPACK_REQUIRE__}, ${__NON_SERPACK_REQUIRE__}, module, module.exports);`,
       `    ${__SERPACK_MODULE_CACHE__}[id.slice(3)]=module.exports;`,
       '    return module.exports;',
