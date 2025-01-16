@@ -117,6 +117,7 @@ class Compiler {
       },
       jsc: {
         // externalHelpers: true,
+        target: 'es2015',
         parser: {
           syntax: this.sourceType === 'typescript' ? 'typescript' : 'ecmascript',
         },

@@ -15,7 +15,7 @@
     __serpack_module_cache__[id.slice(3)] = module.exports;
     return module.exports;
   }
-  return __serpack_require__('sp:0');
+  module.exports = __serpack_require__('sp:0');
 })({
   /*[0]scripts\build.ts*/ 0: (
     __serpack_require__,
@@ -25,16 +25,16 @@
   ) => {
     'use strict';
     Object.defineProperty(exports, '__esModule', { value: !0 });
-    var e = require('child_process'),
-      r = require('esbuild'),
-      t = require('esbuild-node-externals'),
+    const e = require('child_process'),
+      t = require('esbuild'),
+      r = require('esbuild-node-externals'),
       n = require('fs'),
-      o = (function (e, r) {
+      o = (function (e, t) {
         if (e && e.__esModule) return e;
         if (null === e || ('object' != typeof e && 'function' != typeof e))
           return { default: e };
-        var t = l(void 0);
-        if (t && t.has(e)) return t.get(e);
+        var r = s(void 0);
+        if (r && r.has(e)) return r.get(e);
         var n = { __proto__: null },
           o = Object.defineProperty && Object.getOwnPropertyDescriptor;
         for (var i in e)
@@ -42,124 +42,104 @@
             var c = o ? Object.getOwnPropertyDescriptor(e, i) : null;
             c && (c.get || c.set) ? Object.defineProperty(n, i, c) : (n[i] = e[i]);
           }
-        return (n.default = e), t && t.set(e, n), n;
+        return (n.default = e), r && r.set(e, n), n;
       })(require('glob')),
       i = require('path'),
       c = __serpack_require__('sp:1');
-    function l(e) {
+    function s(e) {
       if ('function' != typeof WeakMap) return null;
-      var r = new WeakMap(),
-        t = new WeakMap();
-      return (l = function (e) {
-        return e ? t : r;
+      var t = new WeakMap(),
+        r = new WeakMap();
+      return (s = function (e) {
+        return e ? r : t;
       })(e);
     }
-    var a = o.globSync(['packages/**/*/build.json']),
-      u = !0,
-      s = !1,
-      f = void 0;
-    try {
-      for (var p, d = a[Symbol.iterator](); !(u = (p = d.next()).done); u = !0)
-        !(function () {
-          var o = p.value;
-          console.log('> '.concat((0, i.join)(process.cwd(), o)));
-          var l = JSON.parse((0, n.readFileSync)((0, i.join)(process.cwd(), o), 'utf-8')),
-            a = (0, i.dirname)(o),
-            u = (0, i.join)(a, 'dist');
-          (0, n.existsSync)(u) && (0, n.rmSync)(u, { recursive: !0, force: !0 });
-          var s = {
-            entryPoints: l.map(function (e) {
-              return (0, i.join)(a, e);
-            }),
-            logLevel: 'info',
-            platform: 'node',
-            outbase: (0, i.join)(a, './src'),
-            outdir: (0, i.join)(a, './dist'),
-            metafile: !0,
-            minify: !0,
-            plugins: [
-              (0, t.nodeExternalsPlugin)({ packagePath: (0, i.join)(a, 'package.json') }),
-              c.esmSplitCodeToCjs,
-            ],
-          };
-          if (
-            ((0, r.build)(
-              ((f = (function (e) {
-                for (var r = 1; r < arguments.length; r++) {
-                  var t = null != arguments[r] ? arguments[r] : {},
-                    n = Object.keys(t);
-                  'function' == typeof Object.getOwnPropertySymbols &&
-                    (n = n.concat(
-                      Object.getOwnPropertySymbols(t).filter(function (e) {
-                        return Object.getOwnPropertyDescriptor(t, e).enumerable;
-                      })
-                    )),
-                    n.forEach(function (r) {
-                      var n;
-                      (n = t[r]),
-                        r in e
-                          ? Object.defineProperty(e, r, {
-                              value: n,
-                              enumerable: !0,
-                              configurable: !0,
-                              writable: !0,
-                            })
-                          : (e[r] = n);
-                    });
-                }
-                return e;
-              })({}, s)),
-              (d = {
-                format: 'esm',
-                bundle: !0,
-                chunkNames: 'chunks/[hash]',
-                outExtension: { '.js': '.mjs' },
-              }),
-              (d = null != d ? d : {}),
+    for (const s of o.globSync(['packages/**/*/build.json'])) {
+      console.log(`> ${(0, i.join)(process.cwd(), s)}`);
+      let o = JSON.parse((0, n.readFileSync)((0, i.join)(process.cwd(), s), 'utf-8')),
+        a = (0, i.dirname)(s),
+        p = (0, i.join)(a, 'dist');
+      (0, n.existsSync)(p) && (0, n.rmSync)(p, { recursive: !0, force: !0 });
+      let f = {
+        entryPoints: o.map((e) => (0, i.join)(a, e)),
+        logLevel: 'info',
+        platform: 'node',
+        outbase: (0, i.join)(a, './src'),
+        outdir: (0, i.join)(a, './dist'),
+        metafile: !0,
+        minify: !0,
+        plugins: [
+          (0, r.nodeExternalsPlugin)({ packagePath: (0, i.join)(a, 'package.json') }),
+          c.esmSplitCodeToCjs,
+        ],
+      };
+      if (
+        ((0, t.build)(
+          (function (e, t) {
+            return (
+              (t = null != t ? t : {}),
               Object.getOwnPropertyDescriptors
-                ? Object.defineProperties(f, Object.getOwnPropertyDescriptors(d))
-                : (function (e, r) {
-                    var t = Object.keys(e);
+                ? Object.defineProperties(e, Object.getOwnPropertyDescriptors(t))
+                : (function (e, t) {
+                    var r = Object.keys(e);
                     if (Object.getOwnPropertySymbols) {
                       var n = Object.getOwnPropertySymbols(e);
-                      t.push.apply(t, n);
+                      r.push.apply(r, n);
                     }
-                    return t;
-                  })(Object(d)).forEach(function (e) {
-                    Object.defineProperty(f, e, Object.getOwnPropertyDescriptor(d, e));
+                    return r;
+                  })(Object(t)).forEach(function (r) {
+                    Object.defineProperty(e, r, Object.getOwnPropertyDescriptor(t, r));
                   }),
-              f)
-            ),
-            process.argv.includes('--types'))
-          ) {
-            console.log('+ Generating .d.ts ');
-            var f,
-              d,
-              y,
-              b,
-              j = (0, e.exec)('tsc --emitDeclarationOnly --declaration', { cwd: a });
-            null === (y = j.stderr) ||
-              void 0 === y ||
-              y.on('data', function (e) {
-                return console.error(e.toString());
-              }),
-              null === (b = j.stdout) ||
-                void 0 === b ||
-                b.on('data', function (e) {
-                  return console.log(e.toString());
-                }),
-              j.on('close', function () {
-                console.log('+ .d.ts compilation done\n');
-              });
-          }
-        })();
-    } catch (e) {
-      (s = !0), (f = e);
-    } finally {
-      try {
-        u || null == d.return || d.return();
-      } finally {
-        if (s) throw f;
+              e
+            );
+          })(
+            (function (e) {
+              for (var t = 1; t < arguments.length; t++) {
+                var r = null != arguments[t] ? arguments[t] : {},
+                  n = Object.keys(r);
+                'function' == typeof Object.getOwnPropertySymbols &&
+                  (n = n.concat(
+                    Object.getOwnPropertySymbols(r).filter(function (e) {
+                      return Object.getOwnPropertyDescriptor(r, e).enumerable;
+                    })
+                  )),
+                  n.forEach(function (t) {
+                    var n;
+                    (n = r[t]),
+                      t in e
+                        ? Object.defineProperty(e, t, {
+                            value: n,
+                            enumerable: !0,
+                            configurable: !0,
+                            writable: !0,
+                          })
+                        : (e[t] = n);
+                  });
+              }
+              return e;
+            })({}, f),
+            {
+              format: 'esm',
+              bundle: !0,
+              chunkNames: 'chunks/[hash]',
+              outExtension: { '.js': '.mjs' },
+            }
+          )
+        ),
+        process.argv.includes('--types'))
+      ) {
+        var l, u;
+        console.log('+ Generating .d.ts ');
+        let t = (0, e.exec)('tsc --emitDeclarationOnly --declaration', { cwd: a });
+        null === (l = t.stderr) ||
+          void 0 === l ||
+          l.on('data', (e) => console.error(e.toString())),
+          null === (u = t.stdout) ||
+            void 0 === u ||
+            u.on('data', (e) => console.log(e.toString())),
+          t.on('close', () => {
+            console.log('+ .d.ts compilation done\n');
+          });
       }
     }
   },
@@ -170,164 +150,61 @@
     exports
   ) => {
     'use strict';
+    var e;
     Object.defineProperty(exports, '__esModule', { value: !0 }),
       Object.defineProperty(exports, 'esmSplitCodeToCjs', {
         enumerable: !0,
         get: function () {
-          return r;
+          return i;
         },
       });
-    var e,
-      t = (e = require('esbuild')) && e.__esModule ? e : { default: e };
-    function n(e, t, n, r, o, i, u) {
+    const t = (e = require('esbuild')) && e.__esModule ? e : { default: e };
+    function n(e, t, n, i, o, r, s) {
       try {
-        var l = e[i](u),
-          a = l.value;
+        var u = e[r](s),
+          l = u.value;
       } catch (e) {
         n(e);
         return;
       }
-      l.done ? t(a) : Promise.resolve(a).then(r, o);
+      u.done ? t(l) : Promise.resolve(l).then(i, o);
     }
-    var r = {
+    const i = {
       name: 'esmSplitCodeToCjs',
-      setup: function (e) {
-        var r, o;
+      setup(e) {
+        var i, o;
         e.onEnd(
-          ((r = function (n) {
-            var r, o, i;
-            return (function (e, t) {
-              var n,
-                r,
-                o,
-                i,
-                u = {
-                  label: 0,
-                  sent: function () {
-                    if (1 & o[0]) throw o[1];
-                    return o[1];
-                  },
-                  trys: [],
-                  ops: [],
-                };
-              return (
-                (i = { next: l(0), throw: l(1), return: l(2) }),
-                'function' == typeof Symbol &&
-                  (i[Symbol.iterator] = function () {
-                    return this;
-                  }),
-                i
-              );
-              function l(i) {
-                return function (l) {
-                  return (function (i) {
-                    if (n) throw TypeError('Generator is already executing.');
-                    for (; u; )
-                      try {
-                        if (
-                          ((n = 1),
-                          r &&
-                            (o =
-                              2 & i[0]
-                                ? r.return
-                                : i[0]
-                                ? r.throw || ((o = r.return) && o.call(r), 0)
-                                : r.next) &&
-                            !(o = o.call(r, i[1])).done)
-                        )
-                          return o;
-                        switch (((r = 0), o && (i = [2 & i[0], o.value]), i[0])) {
-                          case 0:
-                          case 1:
-                            o = i;
-                            break;
-                          case 4:
-                            return u.label++, { value: i[1], done: !1 };
-                          case 5:
-                            u.label++, (r = i[1]), (i = [0]);
-                            continue;
-                          case 7:
-                            (i = u.ops.pop()), u.trys.pop();
-                            continue;
-                          default:
-                            if (
-                              !(o = (o = u.trys).length > 0 && o[o.length - 1]) &&
-                              (6 === i[0] || 2 === i[0])
-                            ) {
-                              u = 0;
-                              continue;
-                            }
-                            if (3 === i[0] && (!o || (i[1] > o[0] && i[1] < o[3]))) {
-                              u.label = i[1];
-                              break;
-                            }
-                            if (6 === i[0] && u.label < o[1]) {
-                              (u.label = o[1]), (o = i);
-                              break;
-                            }
-                            if (o && u.label < o[2]) {
-                              (u.label = o[2]), u.ops.push(i);
-                              break;
-                            }
-                            o[2] && u.ops.pop(), u.trys.pop();
-                            continue;
-                        }
-                        i = t.call(e, u);
-                      } catch (e) {
-                        (i = [6, e]), (r = 0);
-                      } finally {
-                        n = o = 0;
-                      }
-                    if (5 & i[0]) throw i[1];
-                    return { value: i[0] ? i[1] : void 0, done: !0 };
-                  })([i, l]);
-                };
-              }
-            })(this, function (u) {
-              switch (u.label) {
-                case 0:
-                  return (
-                    (i = Object.keys(
-                      null !==
-                        (o =
-                          null === (r = n.metafile) || void 0 === r
-                            ? void 0
-                            : r.outputs) && void 0 !== o
-                        ? o
-                        : {}
-                    ).filter(function (e) {
-                      return e.endsWith('mjs') || e.endsWith('js');
-                    })),
-                    [
-                      4,
-                      t.default.build({
-                        outdir: e.initialOptions.outdir,
-                        entryPoints: i,
-                        allowOverwrite: !0,
-                        minify: !0,
-                        format: 'cjs',
-                        logLevel: 'info',
-                        outExtension: { '.js': '.js' },
-                      }),
-                    ]
-                  );
-                case 1:
-                  return u.sent(), [2];
-              }
+          ((i = function* (n) {
+            var i, o;
+            let r = Object.keys(
+              null !==
+                (o = null === (i = n.metafile) || void 0 === i ? void 0 : i.outputs) &&
+                void 0 !== o
+                ? o
+                : {}
+            ).filter((e) => e.endsWith('mjs') || e.endsWith('js'));
+            yield t.default.build({
+              outdir: e.initialOptions.outdir,
+              entryPoints: r,
+              allowOverwrite: !0,
+              minify: !0,
+              format: 'cjs',
+              logLevel: 'info',
+              outExtension: { '.js': '.js' },
             });
           }),
           (o = function () {
             var e = this,
               t = arguments;
-            return new Promise(function (o, i) {
-              var u = r.apply(e, t);
+            return new Promise(function (o, r) {
+              var s = i.apply(e, t);
+              function u(e) {
+                n(s, o, r, u, l, 'next', e);
+              }
               function l(e) {
-                n(u, o, i, l, a, 'next', e);
+                n(s, o, r, u, l, 'throw', e);
               }
-              function a(e) {
-                n(u, o, i, l, a, 'throw', e);
-              }
-              l(void 0);
+              u(void 0);
             });
           }),
           function (e) {
