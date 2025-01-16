@@ -40,6 +40,8 @@ export interface CompilerOptions {
   footer?: string;
 
   forceExternal?: string[];
+
+  runtime?: boolean;
 }
 
 class Compiler {
@@ -116,7 +118,7 @@ class Compiler {
         strict: false,
       },
       jsc: {
-        // externalHelpers: true,
+        externalHelpers: this.parserOptions.runtime || false,
         target: 'es2015',
         parser: {
           syntax: this.sourceType === 'typescript' ? 'typescript' : 'ecmascript',
@@ -291,7 +293,7 @@ class Compiler {
 
     if (this.parserOptions?.banner) codeLines.push(this.parserOptions.banner);
 
-    const wrapperHeader = [
+    let wrapperHeader = [
       '(function(modules) {',
       `  var ${__SERPACK_MODULE_CACHE__}={};`,
       `  function ${__SERPACK_REQUIRE__}(id){`,
@@ -305,6 +307,15 @@ class Compiler {
       `  module.exports=${__SERPACK_REQUIRE__}("sp:0")`,
       '})({',
     ];
+
+    if (this.parserOptions.runtime) {
+      wrapperHeader = [
+        '(function(modules) {',
+        `const ${__SERPACK_REQUIRE__}=require("serpack/runtime").createRequire(modules);`,
+        `module.exports=${__SERPACK_REQUIRE__}("sp:0")`,
+        '})({',
+      ];
+    }
 
     codeLines.push(wrapperHeader.join('\n'));
 

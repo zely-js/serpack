@@ -1,1 +1,1 @@
-["src/index.ts", "src/cli.ts"]
+["src/index.ts", "src/cli.ts", "src/runtime/index.ts"]

@@ -16,6 +16,7 @@ app
   .option('--no-run', 'only bundle file')
   .option('--output, -o', 'provide outfile path')
   .option('--cli', 'whether js app is cli')
+  .option('--runtime', 'enable runtime')
   .option('--sourcemap, -s', '(experimental) provide sourcemap path');
 
 app.action(async (command) => {
@@ -27,6 +28,10 @@ app.action(async (command) => {
   const options: CompilerOptions = {
     banner: command.cli ? '#!/usr/bin/env node' : '',
   };
+
+  if (command.runtime || process.argv.includes('--runtime')) {
+    options.runtime = true;
+  }
 
   const output = await compile(path, options);
   let target;
