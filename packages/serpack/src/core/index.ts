@@ -14,14 +14,18 @@ import { builtinModules } from 'module';
 import { importToRequire } from './parse';
 import {
   __NON_SERPACK_REQUIRE__,
+  __SERPACK_ENV__,
   __SERPACK_MODULE_CACHE__,
   __SERPACK_REQUIRE__,
 } from './functions';
 import { load } from './loader';
+import { findPackage } from '../lib/root';
 
 const MODULE_EXT = ['cjs', 'mjs', 'js', 'cts', 'mts', 'ts', 'jsx', 'tsx'];
+const SUPPORTED_EXT = [...MODULE_EXT, 'json'];
 const TS_EXT = ['ts', 'cts', 'mts', 'tsx'];
 
+/** https://zely.vercel.app/serpack/options */
 export interface CompilerOptions {
   /** `acorn` parser options */
   parserOptions?: ParseOptions;
@@ -39,9 +43,19 @@ export interface CompilerOptions {
   banner?: string;
   footer?: string;
 
+  /** @deprecated use `options.externals` instead */
   forceExternal?: string[];
 
+  nodeExternal?: boolean;
+  externals?: string[];
+
+  /**
+   * https://zely.vercel.app/serpack/runtime
+   */
   runtime?: boolean;
+
+  /** environment (default: node) */
+  target?: 'node' | 'browser';
 }
 
 class Compiler {
@@ -61,6 +75,8 @@ class Compiler {
 
   id: Record<string, number>;
 
+  target: 'node' | 'browser';
+
   constructor(entry: string, compilerOptions?: CompilerOptions) {
     this.entry = entry;
 
@@ -77,6 +93,8 @@ class Compiler {
     this.resolverOptions = this.parserOptions.resolverOptions || {};
 
     this.id = {};
+
+    this.target = this.parserOptions.target || 'node';
 
     this.resolver = new ResolverFactory({
       conditionNames: ['node', 'import'],
@@ -144,6 +162,13 @@ class Compiler {
   resolve(dirname: string = process.cwd(), to: string) {
     const target = this.resolver.sync(dirname, to).path;
 
+    if (!target) return;
+
+    const extension = parsePath(target).ext.slice(1);
+
+    if (!SUPPORTED_EXT.includes(extension)) return;
+
+    /* deprecated - forceExternal */
     if (this.parserOptions?.forceExternal?.includes(to)) {
       debug(`Resolving module: ${target} [rejected - externals]`);
       return;
@@ -154,14 +179,27 @@ class Compiler {
       return;
     }
 
+    // node modules
     if (target?.includes('node_modules')) {
-      debug(`Resolving module: ${target} [rejected - node_modules]`);
-      return;
-    }
+      if (this.parserOptions.nodeExternal) {
+        debug(`Resolving module: ${target} [rejected - node_modules]`);
+        return; // exclude
+      }
 
-    if (!target) {
-      debug(`Resolving module: ${target} [failed]`);
-      return;
+      if (this.parserOptions.externals?.length === 0) return target; // include
+
+      const pkgPath = findPackage(target);
+
+      if (!pkgPath) return target; // include
+
+      const pkg = JSON.parse(readFileSync(pkgPath).toString());
+      const { name } = pkg;
+
+      if (this.parserOptions.externals?.includes(name)) {
+        return;
+      }
+
+      return target;
     }
 
     return target;
@@ -184,6 +222,7 @@ class Compiler {
     debug(`Resolving module: ${target}`);
 
     const output = await this.transform(target);
+
     const parsed = this.parseModule(target, output.code, this.parserOptions);
 
     this.modules[target] = {
@@ -296,6 +335,12 @@ class Compiler {
     let wrapperHeader = [
       '(function(modules) {',
       `  var ${__SERPACK_MODULE_CACHE__}={};`,
+      `  var ${__SERPACK_ENV__}=${JSON.stringify({
+        target: this.target,
+      })};`,
+      `  ${
+        this.target === 'node' ? 'process.env' : 'window'
+      }.__RUNTIME__=${__SERPACK_ENV__};`,
       `  function ${__SERPACK_REQUIRE__}(id){`,
       '    if (!id.startsWith("sp:")) return require(id);',
       `    if (${__SERPACK_MODULE_CACHE__}[id.slice(3)]) return ${__SERPACK_MODULE_CACHE__}[id.slice(3)];`,

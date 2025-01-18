@@ -28,6 +28,7 @@ $ serpack <path>
 | `--output, -o`    | provide outfile path                      | `"cache.~.js"` | `string`              |
 | `--sourcemap, -s` | provide sourcemap path **(experimental)** | `false`        | `boolean` \| `string` |
 | `--cli`           | whether js file is cli app                | `false`        | `boolean`             |
+| `--external`      | exclude `node_modules` from output        | `false`        | `boolean`             |
 
 > TIP: A flag with a boolean type as its value, such as `--cli`, must specify true or false as `--cli=true`
 
@@ -47,14 +48,17 @@ compile('foo/bar.ts', {
 });
 ```
 
-| Option            | Description                    | Default  |
-| ----------------- | ------------------------------ | -------- |
-| `parserOptions`   | Acorn parse options            | `{}`     |
-| `globals`         | Global variable settings (swc) |          |
-| `resolverOptions` | oxc-resolver options           | `{}`     |
-| `type`            | Type (`script` \| `module`)    | `module` |
-| `banner`          | banner                         | `""`     |
-| `footer`          | footer                         | `""`     |
+| Option            | Description                                  | Default    |
+| ----------------- | -------------------------------------------- | ---------- |
+| `nodeExternal`    | exclude `node_modules` from output           | `false`    |
+| `externals`       | module to exclude                            | `[]`       |
+| `runtime`         | enable runtime (output size will be smaller) | `[]`       |
+| `parserOptions`   | Acorn parse options                          | `{}`       |
+| `globals`         | Global variable settings (swc)               |            |
+| `resolverOptions` | oxc-resolver options                         | `{}`       |
+| `type`            | Type (`script` \| `module`)                  | `"module"` |
+| `banner`          | banner                                       | `""`       |
+| `footer`          | footer                                       | `""`       |
 
 > 🚧 The sourcemap generation is still under development.
 

@@ -13,11 +13,12 @@ const app = program('serpack');
 app.version(pkg.version);
 
 app
-  .option('--no-run', 'only bundle file')
+  .option('--no-run', 'only bundle file', false)
   .option('--output, -o', 'provide outfile path')
-  .option('--cli', 'whether js app is cli')
-  .option('--runtime', 'enable runtime')
-  .option('--sourcemap, -s', '(experimental) provide sourcemap path');
+  .option('--cli', 'whether js app is cli', false)
+  .option('--runtime', 'enable runtime', false)
+  .option('--external', 'exclude node_modules from output', false)
+  .option('--sourcemap, -s', '(experimental) provide sourcemap path', false);
 
 app.action(async (command) => {
   const args = command.__;
@@ -31,6 +32,9 @@ app.action(async (command) => {
 
   if (command.runtime || process.argv.includes('--runtime')) {
     options.runtime = true;
+  }
+  if (command.external || process.argv.includes('--external')) {
+    options.nodeExternal = true;
   }
 
   const output = await compile(path, options);
