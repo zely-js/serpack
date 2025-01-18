@@ -356,6 +356,12 @@ class Compiler {
     if (this.parserOptions.runtime) {
       wrapperHeader = [
         '(function(modules) {',
+        `  var ${__SERPACK_ENV__}=${JSON.stringify({
+          target: this.target,
+        })};`,
+        `  ${
+          this.target === 'node' ? 'process.env' : 'window'
+        }.__RUNTIME__=${__SERPACK_ENV__};`,
         `const ${__SERPACK_REQUIRE__}=require("serpack/runtime").createRequire(modules);`,
         `module.exports=${__SERPACK_REQUIRE__}("sp:0")`,
         '})({',

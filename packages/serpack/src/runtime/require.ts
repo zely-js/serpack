@@ -71,7 +71,7 @@ export function createBrowserRequire(modules: Record<number, any>) {
 
 /** create require() to load virtual modules */
 export function createRequire(modules: Record<number, any>) {
-  const runtimeTarget = env().target;
+  const runtimeTarget = env()?.target;
 
   if (runtimeTarget === 'node') {
     return createNodeRequire(modules);
