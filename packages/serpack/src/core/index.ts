@@ -1,3 +1,4 @@
+/* eslint-disable no-loop-func */
 /* eslint-disable default-param-last */
 import { dirname, extname, join, parse as parsePath, relative } from 'path';
 import { readFileSync } from 'fs';
@@ -9,6 +10,7 @@ import { parse } from 'acorn';
 import { ResolverFactory, NapiResolveOptions } from 'oxc-resolver';
 import { walk } from 'estree-walker';
 import { generate } from 'escodegen';
+import { SourceMapGenerator, SourceMapConsumer } from 'source-map';
 
 import { builtinModules } from 'module';
 import { importToRequire } from './parse';
@@ -56,6 +58,13 @@ export interface CompilerOptions {
 
   /** environment (default: node) */
   target?: 'node' | 'browser';
+
+  /** Allow sourcemap generation */
+  sourcemap?: boolean;
+
+  sourcemapOptions?: {
+    sourcemapRoot?: string;
+  };
 }
 
 class Compiler {
@@ -314,33 +323,26 @@ class Compiler {
     };
   }
 
-  bundle() {
+  async bundle() {
     const { modules } = this;
-    const sections = [];
-    const codeLines = [];
+    const codeLines: string[] = [];
+    const addedSources = new Set<string>();
+    const enableSourcemap = this.parserOptions.sourcemap;
+    let currentLine = 1;
+    let generator: SourceMapGenerator;
 
-    const createModule = (file: string, code: string): [string, number] => {
-      const lines = [
-        `${JSON.stringify(
-          this.id[file]
-        )}:(${__SERPACK_REQUIRE__},__non_serpack_require__,module,exports)=>`,
-        `{${code.replace(/"/g, '\\"')}}`,
-      ];
+    if (this.parserOptions?.banner) {
+      codeLines.push(this.parserOptions.banner);
+      currentLine += this.parserOptions.banner.split('\n').length;
+    }
 
-      return [lines.join(''), lines.slice(0, 1).join('').length];
-    };
-
-    if (this.parserOptions?.banner) codeLines.push(this.parserOptions.banner);
+    if (enableSourcemap) {
+      generator = new SourceMapGenerator({ file: 'bundle.js' });
+    }
 
     let wrapperHeader = [
       '(function(modules) {',
       `  var ${__SERPACK_MODULE_CACHE__}={};`,
-      `  var ${__SERPACK_ENV__}=${JSON.stringify({
-        target: this.target,
-      })};`,
-      `  ${
-        this.target === 'node' ? 'process.env' : 'window'
-      }.__RUNTIME__=${__SERPACK_ENV__};`,
       `  function ${__SERPACK_REQUIRE__}(id){`,
       '    if (!id.startsWith("sp:")) return require(id);',
       `    if (${__SERPACK_MODULE_CACHE__}[id.slice(3)]) return ${__SERPACK_MODULE_CACHE__}[id.slice(3)];`,
@@ -349,7 +351,7 @@ class Compiler {
       `    ${__SERPACK_MODULE_CACHE__}[id.slice(3)]=module.exports;`,
       '    return module.exports;',
       '  }',
-      `  module.exports=${__SERPACK_REQUIRE__}("sp:0")`,
+      `  module.exports=${__SERPACK_REQUIRE__}("sp:0");`,
       '})({',
     ];
 
@@ -361,54 +363,67 @@ class Compiler {
         })};`,
         `  ${
           this.target === 'node' ? 'process.env' : 'window'
-        }.__RUNTIME__=${__SERPACK_ENV__};`,
+        }.__RUNTIME__=JSON.stringify(${__SERPACK_ENV__});`,
         `const ${__SERPACK_REQUIRE__}=require("serpack/runtime").createRequire(modules);`,
         `module.exports=${__SERPACK_REQUIRE__}("sp:0")`,
         '})({',
       ];
     }
 
-    codeLines.push(wrapperHeader.join('\n'));
+    codeLines.push(...wrapperHeader);
+    currentLine += wrapperHeader.length;
 
-    let currentLine = codeLines.join('\n').split('\n').length + 1;
+    for await (const [file, module] of Object.entries(modules)) {
+      const banner = `/* ${file} */ "${this.id[file]}": (function(${__SERPACK_REQUIRE__},__non_serpack_require__,module,exports) { `;
+      const moduleCode = `${banner}${module.code} }),`;
+      codeLines.push(moduleCode);
 
-    // Process each module and track line numbers
-    for (const [index, module] of Object.keys(modules).entries()) {
-      const [moduleCode, moduleLength] = createModule(module, modules[module].code);
-      let moduleLine = `/*[${index}]${relative(process.cwd(), module)}*/`;
+      if (enableSourcemap) {
+        const consumer = await new SourceMapConsumer(module.map);
 
-      sections.push({
-        offset: {
-          line: currentLine,
-          column: moduleLength + moduleLine.length + 2,
-        },
-        map: {
-          version: 3,
-          file: relative(process.cwd(), module),
-          sources: [relative(process.cwd(), module)],
-          sourcesContent: modules[module].map.sourcesContent,
-          names: modules[module].map.names,
-          mappings: modules[module].map.mappings,
-        },
-      });
+        consumer.eachMapping((mapping) => {
+          generator.addMapping({
+            source: relative(
+              this.parserOptions?.sourcemapOptions?.sourcemapRoot || dirname(this.entry),
+              mapping.source
+            ),
+            original: {
+              line: mapping.originalLine,
+              column: mapping.originalColumn,
+            },
+            generated: {
+              line: currentLine,
+              column: mapping.generatedColumn + banner.length,
+            },
+            name: mapping.name,
+          });
 
-      moduleLine += `${moduleCode},`;
+          if (mapping.source && !addedSources.has(mapping.source)) {
+            addedSources.add(mapping.source);
+            generator.setSourceContent(
+              mapping.source,
+              consumer.sourceContentFor(mapping.source, true)
+            );
+          }
+        });
+      }
 
-      codeLines.push(moduleLine);
-      currentLine += 1;
+      currentLine += moduleCode.split('\n').length;
     }
 
     codeLines.push('});');
+    currentLine += 1;
 
-    if (this.parserOptions?.footer) codeLines.push(this.parserOptions.footer);
+    if (this.parserOptions?.footer) {
+      codeLines.push(this.parserOptions.footer);
+      currentLine += this.parserOptions.footer.split('\n').length;
+    }
+
+    // console.log(generator.toString());
 
     return {
       code: codeLines.join('\n'),
-      map: {
-        version: 3,
-        file: 'bundle.js',
-        sections,
-      },
+      map: enableSourcemap ? generator.toString() : null,
     };
   }
 }

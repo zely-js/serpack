@@ -8,13 +8,13 @@ async function compile(entry: string, compilerOptions?: CompilerOptions) {
 
   await compiler.compile(entry);
 
-  const output = compiler.bundle();
+  const output = await compiler.bundle();
 
   debug(`Compiled Successfully in ${(performance.now() - now).toFixed()}ms`);
 
   return {
     code: output.code,
-    map: JSON.stringify(output.map),
+    map: output.map,
   };
 }
 

@@ -2,7 +2,7 @@
 
 import program from 'animaux';
 import { rmSync, writeFileSync } from 'fs';
-import { join, relative } from 'path';
+import { dirname, join, relative } from 'path';
 import { debug } from '@serpack/logger';
 
 import pkg from '../package.json';
@@ -30,14 +30,6 @@ app.action(async (command) => {
     banner: command.cli ? '#!/usr/bin/env node' : '',
   };
 
-  if (command.runtime || process.argv.includes('--runtime')) {
-    options.runtime = true;
-  }
-  if (command.external || process.argv.includes('--external')) {
-    options.nodeExternal = true;
-  }
-
-  const output = await compile(path, options);
   let target;
 
   if (command.output) {
@@ -45,6 +37,21 @@ app.action(async (command) => {
   } else {
     target = join(process.cwd(), `cache.${performance.now()}.js`);
   }
+
+  if (command.runtime || process.argv.includes('--runtime')) {
+    options.runtime = true;
+  }
+  if (command.external || process.argv.includes('--external')) {
+    options.nodeExternal = true;
+  }
+  if (command.sourcemap) {
+    options.sourcemap = true;
+    options.sourcemapOptions = {
+      sourcemapRoot: dirname(`${target}.map`),
+    };
+  }
+
+  const output = await compile(path, options);
 
   if (command.sourcemap) {
     if (typeof command.sourcemap !== 'string') {
