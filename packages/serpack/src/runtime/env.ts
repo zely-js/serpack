@@ -16,7 +16,7 @@ export type RuntimeEnv = {
 
 declare global {
   /** RUNTIME ENV */
-  var __RUNTIME__: RuntimeEnv;
+  var __RUNTIME__: string;
 }
 
 /**
@@ -29,7 +29,7 @@ export function env(__serpack_env__?: RuntimeEnv): RuntimeEnv {
     }
 
     if (typeof window !== 'undefined' && window?.__RUNTIME__) {
-      return window.__RUNTIME__;
+      return JSON.parse(window.__RUNTIME__);
     }
   }
 
