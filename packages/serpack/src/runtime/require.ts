@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 // export * as __swc_helper__ from '@swc/helpers';
 
+import { __SERPACK_MODULE_PENDING__ } from '../core/functions';
 import { env } from './env';
 
 /** create require function working in node environment */
@@ -17,6 +18,8 @@ export function createNodeRequire(modules: Record<number, any>) {
     }
 
     const module = { exports: {} };
+
+    __serpack_module_cache__[id] = __SERPACK_MODULE_PENDING__;
 
     modules[id].call(
       module.exports,
@@ -54,6 +57,8 @@ export function createBrowserRequire(modules: Record<number, any>) {
 
     const module = { exports: {} };
 
+    __serpack_module_cache__[id] = __SERPACK_MODULE_PENDING__;
+
     modules[id].call(
       module.exports,
       __serpack_require__,
@@ -73,7 +78,9 @@ export function createBrowserRequire(modules: Record<number, any>) {
 export function createRequire(modules: Record<number, any>) {
   const runtimeTarget = env()?.target;
 
-  if (runtimeTarget === 'node') {
-    return createNodeRequire(modules);
+  if (runtimeTarget === 'browser') {
+    return createBrowserRequire(modules);
   }
+
+  return createNodeRequire(modules);
 }

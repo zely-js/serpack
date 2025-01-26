@@ -18,6 +18,7 @@ import {
   __NON_SERPACK_REQUIRE__,
   __SERPACK_ENV__,
   __SERPACK_MODULE_CACHE__,
+  __SERPACK_MODULE_PENDING__,
   __SERPACK_REQUIRE__,
 } from './functions';
 import { load } from './loader';
@@ -222,7 +223,7 @@ class Compiler {
 
     if (!target) return;
 
-    if (!this.id[target]) {
+    if (!(target in this.id)) {
       this.id[target] = Object.keys(this.id).length;
     }
 
@@ -283,7 +284,7 @@ class Compiler {
 
           if (!resolved) return;
 
-          if (!$.id[resolved]) {
+          if (!(resolved in $.id)) {
             $.id[resolved] = Object.keys($.id).length;
           }
 
@@ -301,7 +302,7 @@ class Compiler {
 
           if (!resolved) return;
 
-          if (!$.id[resolved]) {
+          if (!(resolved in $.id)) {
             $.id[resolved] = Object.keys($.id).length;
           }
 
@@ -347,6 +348,7 @@ class Compiler {
       '    if (!id.startsWith("sp:")) return require(id);',
       `    if (${__SERPACK_MODULE_CACHE__}[id.slice(3)]) return ${__SERPACK_MODULE_CACHE__}[id.slice(3)];`,
       '    const module={exports:{}};',
+      `    ${__SERPACK_MODULE_CACHE__}[id.slice(3)]="${__SERPACK_MODULE_PENDING__}";`,
       `    modules[id.slice(3)].call(module.exports, ${__SERPACK_REQUIRE__}, ${__NON_SERPACK_REQUIRE__}, module, module.exports);`,
       `    ${__SERPACK_MODULE_CACHE__}[id.slice(3)]=module.exports;`,
       '    return module.exports;',

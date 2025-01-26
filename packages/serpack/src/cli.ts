@@ -6,7 +6,9 @@ import { dirname, join, relative } from 'path';
 import { debug } from '@serpack/logger';
 
 import pkg from '../package.json';
-import { compile, CompilerOptions } from '.';
+import { CompilerOptions } from '.';
+import { loadConfig } from './config';
+import { compile } from './compile';
 
 const app = program('serpack');
 
@@ -26,8 +28,11 @@ app.action(async (command) => {
 
   debug(`[serpack:cli] args: ${JSON.stringify(command)}`);
 
+  const config = (await loadConfig())?.compilerOptions || {};
+
   const options: CompilerOptions = {
     banner: command.cli ? '#!/usr/bin/env node' : '',
+    ...config,
   };
 
   let target;
