@@ -20,6 +20,7 @@ app
   .option('--cli', 'whether js app is cli', false)
   .option('--runtime', 'enable runtime', false)
   .option('--external', 'exclude node_modules from output', false)
+  .option('--cwd', 'cwd', process.cwd())
   .option('--sourcemap, -s', '(experimental) provide sourcemap path', false);
 
 app.action(async (command) => {
@@ -28,7 +29,7 @@ app.action(async (command) => {
 
   debug(`[serpack:cli] args: ${JSON.stringify(command)}`);
 
-  const config = (await loadConfig())?.compilerOptions || {};
+  const config = (await loadConfig(command.cwd))?.compilerOptions || {};
 
   const options: CompilerOptions = {
     banner: command.cli ? '#!/usr/bin/env node' : '',

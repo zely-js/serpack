@@ -1,6 +1,6 @@
 import { error } from '@serpack/logger';
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs';
-import { dirname, join, relative } from 'path';
+import { dirname, isAbsolute, join, relative } from 'path';
 import { CompilerOptions } from './core';
 import { compile } from './compile';
 
@@ -84,6 +84,9 @@ async function loadConfigDev(cwd: string = process.cwd()): Promise<Options> {
 }
 
 export async function loadConfig(cwd: string = process.cwd()): Promise<Options> {
+  if (!isAbsolute(cwd)) {
+    cwd = join(process.cwd(), cwd);
+  }
   const output: any = await loadConfigDev(cwd);
 
   return output?.default || output;

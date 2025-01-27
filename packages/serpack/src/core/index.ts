@@ -1,10 +1,10 @@
 /* eslint-disable no-loop-func */
 /* eslint-disable default-param-last */
-import { dirname, extname, join, parse as parsePath, relative } from 'path';
+import { dirname, extname, isAbsolute, join, parse as parsePath, relative } from 'path';
 import { readFileSync } from 'fs';
 
 import { transform } from '@swc/core';
-import { debug, error } from '@serpack/logger';
+import { debug, error, warn } from '@serpack/logger';
 import type { Options as ParseOptions } from 'acorn';
 import { parse } from 'acorn';
 import { ResolverFactory, NapiResolveOptions } from 'oxc-resolver';
@@ -88,6 +88,10 @@ class Compiler {
   target: 'node' | 'browser';
 
   constructor(entry: string, compilerOptions?: CompilerOptions) {
+    if (!isAbsolute(entry)) {
+      entry = join(process.cwd(), entry);
+    }
+
     this.entry = entry;
 
     this.modules = {};
@@ -135,6 +139,18 @@ class Compiler {
       error(`unknown options.type: ${this.parserOptions?.type}`);
     }
 
+    if (this.parserOptions?.type === 'script') {
+      if (!this.parserOptions.globals) {
+        this.parserOptions.globals = {};
+      }
+      if (!this.parserOptions.globals.vars) {
+        this.parserOptions.globals.vars = {};
+      }
+
+      this.parserOptions.globals.vars.__filename = JSON.stringify(filename);
+      this.parserOptions.globals.vars.__dirname = JSON.stringify(dirname(filename));
+    }
+
     const output = await transform(source, {
       filename,
       isModule: true,
@@ -146,7 +162,7 @@ class Compiler {
         strict: false,
       },
       jsc: {
-        externalHelpers: this.parserOptions.runtime || false,
+        externalHelpers: !!this.parserOptions.runtime || false,
         target: 'es2015',
         parser: {
           syntax: this.sourceType === 'typescript' ? 'typescript' : 'ecmascript',
@@ -170,7 +186,13 @@ class Compiler {
   }
 
   resolve(dirname: string = process.cwd(), to: string) {
-    const target = this.resolver.sync(dirname, to).path;
+    const out = this.resolver.sync(dirname, to);
+
+    if (out.error?.length > 0) {
+      console.error(out.error);
+    }
+
+    const target = out.path;
 
     if (!target) return;
 
@@ -219,9 +241,14 @@ class Compiler {
     target: string = this.entry,
     caller: string = join(process.cwd(), 'path')
   ) {
-    target = this.resolve(dirname(caller), target);
+    const _target = this.resolve(dirname(caller), target);
 
-    if (!target) return;
+    if (!_target) {
+      warn(`Cannot resolve module: ${target}`);
+      return;
+    }
+
+    target = _target;
 
     if (!(target in this.id)) {
       this.id[target] = Object.keys(this.id).length;
@@ -336,6 +363,8 @@ class Compiler {
       codeLines.push(this.parserOptions.banner);
       currentLine += this.parserOptions.banner.split('\n').length;
     }
+
+    debug(`modules: ${JSON.stringify(this.id)}`);
 
     if (enableSourcemap) {
       generator = new SourceMapGenerator({ file: 'bundle.js' });
