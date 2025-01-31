@@ -34,5 +34,8 @@
     "estree-walker": "2.0.2",
     "oxc-resolver": "^3.0.3",
     "source-map": "^0.7.4"
+  },
+  "devDependencies": {
+    "serpack-dev": "*"
   }
 }

@@ -119,8 +119,7 @@ class Compiler {
   }
 
   async transform(filename: string = this.entry) {
-    const source =
-      filename !== this.entry ? readFileSync(filename, 'utf-8') : this.source;
+    const source = readFileSync(filename, 'utf-8');
 
     if (!MODULE_EXT.includes(extname(filename).slice(1))) {
       const target = filename.replace(/\\/g, '/');
@@ -188,10 +187,6 @@ class Compiler {
   resolve(dirname: string = process.cwd(), to: string) {
     const out = this.resolver.sync(dirname, to);
 
-    if (out.error?.length > 0) {
-      console.error(out.error);
-    }
-
     const target = out.path;
 
     if (!target) return;
@@ -232,6 +227,10 @@ class Compiler {
       }
 
       return target;
+    }
+
+    if (out.error?.length > 0) {
+      console.error(out.error);
     }
 
     return target;

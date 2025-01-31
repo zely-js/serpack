@@ -1,4 +1,5 @@
 import { error } from '@serpack/logger';
+import type { DevOptions } from 'serpack-dev';
 import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { dirname, isAbsolute, join, relative } from 'path';
 import { CompilerOptions } from './core';
@@ -6,7 +7,7 @@ import { compile } from './compile';
 
 export interface Options {
   compilerOptions?: CompilerOptions;
-  dev?: {};
+  dev?: DevOptions;
 }
 
 export function defineConfig(options: Options) {
