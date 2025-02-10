@@ -23,6 +23,7 @@ import {
 } from './functions';
 import { load } from './loader';
 import { findPackage } from '../lib/root';
+import { Plugin } from '../plugin';
 
 const MODULE_EXT = ['cjs', 'mjs', 'js', 'cts', 'mts', 'ts', 'jsx', 'tsx'];
 const SUPPORTED_EXT = [...MODULE_EXT, 'json'];
@@ -66,6 +67,8 @@ export interface CompilerOptions {
   sourcemapOptions?: {
     sourcemapRoot?: string;
   };
+
+  plugins?: Plugin[];
 }
 
 class Compiler {
@@ -116,6 +119,17 @@ class Compiler {
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json', '.d.ts'],
       ...this.resolverOptions,
     });
+
+    for (const element of this.pluginArray('onSetup')) {
+      const output = element(this.parserOptions);
+      if (output) this.parserOptions = { ...this.parserOptions, ...output };
+    }
+  }
+
+  pluginArray<T extends keyof Plugin>(field: T): Plugin[T][] {
+    return (this.parserOptions.plugins?.map((plugin) => plugin[field]) ?? []).filter(
+      (a): a is Plugin[T] => a !== undefined && a !== null
+    );
   }
 
   async transform(filename: string = this.entry) {
@@ -181,6 +195,17 @@ class Compiler {
       },
     });
 
+    for await (const element of this.pluginArray('onCompile')) {
+      const pluginOutput = await element({
+        filename: { original: filename, resolved: filename },
+        output,
+        source,
+      });
+
+      if (pluginOutput && pluginOutput.code) output.code = pluginOutput.code;
+      if (pluginOutput && pluginOutput.map) output.code = pluginOutput.map;
+    }
+
     return { code: output.code, map: JSON.parse(output.map) };
   }
 
@@ -190,6 +215,12 @@ class Compiler {
     const target = out.path;
 
     if (!target) return;
+
+    for (const element of this.pluginArray('onLoad')) {
+      element({
+        filename: { original: to, resolved: target },
+      });
+    }
 
     const extension = parsePath(target).ext.slice(1);
 
@@ -262,7 +293,7 @@ class Compiler {
     const parsed = this.parseModule(target, output.code, this.parserOptions);
 
     this.modules[target] = {
-      code: generate(parsed.ast, { format: { compact: true } }),
+      code: generate(parsed.ast, { format: { compact: true }, comment: true }),
       map: output.map,
     };
 
