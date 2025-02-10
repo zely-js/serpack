@@ -26,6 +26,8 @@ export interface Plugin {
   onCompile?(
     context: PluginContextOnCompile
   ): CompilerOutput<{ code: string; map?: any }>;
+
+  onBundle?(): CompilerOutput<void>;
 }
 
 /**
@@ -37,5 +39,6 @@ export interface Plugin {
  * 5. load & compile module // ==> output
  * 6. run `plugin.onCompile` // Loop
  * ...
+ * 7. run `plugin.onBundle`
  *
  */
