@@ -389,6 +389,10 @@ class Compiler {
     let currentLine = 1;
     let generator: SourceMapGenerator;
 
+    for await (const element of this.pluginArray('onBundle')) {
+      await element();
+    }
+
     if (this.parserOptions?.banner) {
       codeLines.push(this.parserOptions.banner);
       currentLine += this.parserOptions.banner.split('\n').length;

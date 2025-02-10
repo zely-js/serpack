@@ -461,6 +461,46 @@
   resolved "https://registry.yarnpkg.com/@oxc-resolver/binding-win32-x64-msvc/-/binding-win32-x64-msvc-3.0.3.tgz#b22f5c3c315e7c256b526c81ff65660419c44543"
   integrity sha512-miYkngimV69GpmaLclBZHE+PP7jebmqKsUJB7er8/eQfDyH1up52xauNJU+KgI/GHDx+JvMbSakdcyF7zM1/DQ==
 
+"@oxc-transform/binding-darwin-arm64@0.48.2":
+  version "0.48.2"
+  resolved "https://registry.yarnpkg.com/@oxc-transform/binding-darwin-arm64/-/binding-darwin-arm64-0.48.2.tgz#e5b30e068804cb5cfdb8b3d08576e236ce570de7"
+  integrity sha512-JzctV+H6IDl+vwTlY/7+2JMqb+94HUHfgHii+hMUM76XNaLAOyKxn3Be26t/FgrscoIR+bO6kMYL/T0sDkP7fA==
+
+"@oxc-transform/binding-darwin-x64@0.48.2":
+  version "0.48.2"
+  resolved "https://registry.yarnpkg.com/@oxc-transform/binding-darwin-x64/-/binding-darwin-x64-0.48.2.tgz#9c29afca99a8ad7bec3d606f354972f544b5d6c3"
+  integrity sha512-4yen3cHv/AUMb/mmDkrZXTxsFthqdzWbBb39hQgUNK81/AkFS3t+yrg7BBz1zdXunT6iJh/WQDp2ULWEV7Caiw==
+
+"@oxc-transform/binding-linux-arm64-gnu@0.48.2":
+  version "0.48.2"
+  resolved "https://registry.yarnpkg.com/@oxc-transform/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-0.48.2.tgz#c0b351486ef1e1a1e4e72e0d41f5795d5ca7afa6"
+  integrity sha512-LH5+AVb16tNDfkFbG9+aXjfGJTKmPjhIwl5ENHVAN5XlAz2w4rTp9873oo909G6uZWsdOtjxGpG3qzneXg6Aaw==
+
+"@oxc-transform/binding-linux-arm64-musl@0.48.2":
+  version "0.48.2"
+  resolved "https://registry.yarnpkg.com/@oxc-transform/binding-linux-arm64-musl/-/binding-linux-arm64-musl-0.48.2.tgz#6b4ede114578bb546a56b84be2c5d04600cadbb9"
+  integrity sha512-jAP77atjtsfPfRtPhCcsDY3nLXy4oEVIsiuioBDWKuerAGwDPL6Q5GBhFXNH+yN2Yi5lZMgATM/4OGn9dVGM8A==
+
+"@oxc-transform/binding-linux-x64-gnu@0.48.2":
+  version "0.48.2"
+  resolved "https://registry.yarnpkg.com/@oxc-transform/binding-linux-x64-gnu/-/binding-linux-x64-gnu-0.48.2.tgz#c9aa5d9588f361bc3e595b8453bbf7ac606394e5"
+  integrity sha512-qx+xL9FZzSSdYZRzZbvQtqWPaQkDmaHU/EScAiVrELwuDp7Dinn8YmMmYV52iaZvVs2+blMLCOG8xaqIjJIfBA==
+
+"@oxc-transform/binding-linux-x64-musl@0.48.2":
+  version "0.48.2"
+  resolved "https://registry.yarnpkg.com/@oxc-transform/binding-linux-x64-musl/-/binding-linux-x64-musl-0.48.2.tgz#eaf72eaa735ea11d27e6e8e1f193b83d1570f408"
+  integrity sha512-auPVLE2WXWNwjVsQBbN8pX1HDJtUeD4BNkI2byI9LSGpu7kmY9+GGxU5/3INmXNnaMuWTlBiuEKDIUVr9Znt7A==
+
+"@oxc-transform/binding-win32-arm64-msvc@0.48.2":
+  version "0.48.2"
+  resolved "https://registry.yarnpkg.com/@oxc-transform/binding-win32-arm64-msvc/-/binding-win32-arm64-msvc-0.48.2.tgz#360f6279cb383e49ecf15fcc6c4c91ba77b8cc43"
+  integrity sha512-X/hpuxXEhzliwqkSvecxGBrvVpFggH3gnWKNhq4MaMRbPyBpFzRf0ygThzLQdOgUIu806jRXRAL2UY0XDBB7Ng==
+
+"@oxc-transform/binding-win32-x64-msvc@0.48.2":
+  version "0.48.2"
+  resolved "https://registry.yarnpkg.com/@oxc-transform/binding-win32-x64-msvc/-/binding-win32-x64-msvc-0.48.2.tgz#5efa836f722fb734cb0e5c6b55f6d14dbd11e7a6"
+  integrity sha512-CLa3NMLpKiWg3OTu09XVNPWlYci9go/vijoj658zlbccMwT5yioHjPTk+pomycBMNEG5ei6Ak8fWjCKpXXRJRA==
+
 "@rollup/rollup-android-arm-eabi@4.30.1":
   version "4.30.1"
   resolved "https://registry.yarnpkg.com/@rollup/rollup-android-arm-eabi/-/rollup-android-arm-eabi-4.30.1.tgz#14c737dc19603a096568044eadaa60395eefb809"
@@ -2385,6 +2425,20 @@ oxc-resolver@^3.0.3:
     "@oxc-resolver/binding-wasm32-wasi" "3.0.3"
     "@oxc-resolver/binding-win32-arm64-msvc" "3.0.3"
     "@oxc-resolver/binding-win32-x64-msvc" "3.0.3"
+
+oxc-transform@^0.48.2:
+  version "0.48.2"
+  resolved "https://registry.yarnpkg.com/oxc-transform/-/oxc-transform-0.48.2.tgz#73b0071c7e95a22818e7c2c5790c6ce05040a2b2"
+  integrity sha512-SGXm/JNOo8aWUboNvF3KOJHAOI7rBRDiMqKyGQpAY2ffR+VfunCEi2tqYynKzG8gz0L6imgqFgyuASOuvJI8NA==
+  optionalDependencies:
+    "@oxc-transform/binding-darwin-arm64" "0.48.2"
+    "@oxc-transform/binding-darwin-x64" "0.48.2"
+    "@oxc-transform/binding-linux-arm64-gnu" "0.48.2"
+    "@oxc-transform/binding-linux-arm64-musl" "0.48.2"
+    "@oxc-transform/binding-linux-x64-gnu" "0.48.2"
+    "@oxc-transform/binding-linux-x64-musl" "0.48.2"
+    "@oxc-transform/binding-win32-arm64-msvc" "0.48.2"
+    "@oxc-transform/binding-win32-x64-msvc" "0.48.2"
 
 p-limit@^3.0.2:
   version "3.1.0"
