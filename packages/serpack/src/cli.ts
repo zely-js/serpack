@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import program from 'animaux';
+import { CLI } from 'animaux';
 import { rmSync, writeFileSync } from 'fs';
 import { dirname, join, relative } from 'path';
 import { debug } from '@serpack/logger';
@@ -10,11 +10,7 @@ import { CompilerOptions } from '.';
 import { loadConfig } from './config';
 import { compile } from './compile';
 
-const app = program('serpack');
-
-app.version(pkg.version);
-
-app
+const app = new CLI('serpack')
   .option('--no-run', 'only bundle file', false)
   .option('--output, -o', 'provide outfile path')
   .option('--cli', 'whether js app is cli', false)
@@ -23,8 +19,10 @@ app
   .option('--cwd', 'cwd', process.cwd())
   .option('--sourcemap, -s', '(experimental) provide sourcemap path', false);
 
-app.action(async (command) => {
-  const args = command.__;
+app.version(pkg.version);
+
+app.action(async ({ options: command }) => {
+  const args = (command as any).__;
   const path = args.join(' ');
 
   debug(`[serpack:cli] args: ${JSON.stringify(command)}`);
@@ -61,7 +59,7 @@ app.action(async (command) => {
 
   if (command.sourcemap) {
     if (typeof command.sourcemap !== 'string') {
-      command.sourcemap = `${target}.map`;
+      (command as any).sourcemap = `${target}.map`;
     }
     writeFileSync(command.sourcemap, output.map);
   }
@@ -84,4 +82,4 @@ app.action(async (command) => {
   }
 });
 
-app.parse(process.argv);
+app.parse(process.argv.slice(2));

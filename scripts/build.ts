@@ -33,7 +33,6 @@ for (const pkg of buildPkgs) {
     outbase: join(buildBase, './src'),
     outdir: join(buildBase, './dist'),
     metafile: true,
-    minify: true,
 
     plugins: [
       nodeExternalsPlugin({

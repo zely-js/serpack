@@ -13,7 +13,6 @@ export const esmSplitCodeToCjs: esbuild.Plugin = {
         outdir: build.initialOptions.outdir,
         entryPoints: jsFiles,
         allowOverwrite: true,
-        minify: true,
         format: 'cjs',
         logLevel: 'info',
         outExtension: {

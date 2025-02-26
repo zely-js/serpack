@@ -922,10 +922,10 @@ ajv@^6.12.4:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-animaux@^0.0.4:
-  version "0.0.4"
-  resolved "https://registry.yarnpkg.com/animaux/-/animaux-0.0.4.tgz#46a97966c41c8ef953844922de24aaf81ff3ce79"
-  integrity sha512-dPpVuWfXF7Mu9TXBsMnpkVoQiYyKZnmBPqoGYsjsKKLm2PKpiLNBTijUoPenZ272PUrYDagzvE2oEBI+7Ra4aA==
+animaux@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/animaux/-/animaux-0.1.0.tgz#3fc14b6d3433b2006836f23400291d014cab7909"
+  integrity sha512-Sxemta4/sfVFTW3LwneEr69Ve05SNl6f/Omvh3QuswkpfGRNxRSWYzV8fX4fHmeYxssbG7xH0bx2ym74LQh7jw==
   dependencies:
     colors "^1.4.0"
 
