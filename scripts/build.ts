@@ -15,9 +15,14 @@ for (const pkg of buildPkgs) {
   const buildBase = dirname(pkg);
 
   const outdir = join(buildBase, 'dist');
+  const outdirTypes = join(buildBase, 'types');
 
   if (existsSync(outdir)) {
     rmSync(outdir, { recursive: true, force: true });
+  }
+
+  if (existsSync(outdirTypes)) {
+    rmSync(outdirTypes, { recursive: true, force: true });
   }
 
   const baseConfig: BuildOptions = {
@@ -28,7 +33,6 @@ for (const pkg of buildPkgs) {
     outbase: join(buildBase, './src'),
     outdir: join(buildBase, './dist'),
     metafile: true,
-    minify: true,
 
     plugins: [
       nodeExternalsPlugin({

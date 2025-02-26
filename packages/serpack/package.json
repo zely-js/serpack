@@ -4,20 +4,19 @@
   "bin": "./dist/cli.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
-  "types": "./types/index.d.ts",
+  "types": "./dist/index.d.ts",
   "description": "JavaScript/TypeScript tool for application development.",
   "files": [
-    "dist",
-    "types"
+    "dist"
   ],
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "default": "./dist/index.js"
     },
     "./runtime": {
-      "types": "./types/runtime/index.d.ts",
+      "types": "./dist/runtime/index.d.ts",
       "import": "./dist/runtime/index.mjs",
       "default": "./dist/runtime/index.js"
     },
@@ -30,7 +29,7 @@
     "@swc/core": "^1.10.4",
     "@swc/helpers": "^0.5.15",
     "acorn": "^8.14.0",
-    "animaux": "^0.0.4",
+    "animaux": "^0.1.0",
     "escodegen": "^2.1.0",
     "estree-walker": "2.0.2",
     "oxc-resolver": "^3.0.3",
