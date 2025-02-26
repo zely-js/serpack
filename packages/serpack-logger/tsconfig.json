@@ -2,11 +2,11 @@
   "extends": "../tsconfig/tsconfig.base.json",
   "compilerOptions": {
     "rootDir": "./src",
-    "outDir": "./dist/",
+    "outDir": "./types/",
     "paths": {
       "~/*": ["./"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "lib/**/*.ts", "lib/**/*.tsx"],
-  "exclude": ["**/*.test.ts", "**/*.test.tsx"]
+  "exclude": ["**/*.test.ts", "**/*.test.tsx", "./dist/**/*", "./types/**/*"]
 }
