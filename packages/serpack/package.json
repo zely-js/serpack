@@ -4,20 +4,19 @@
   "bin": "./dist/cli.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
-  "types": "./types/index.d.ts",
+  "types": "./dist/index.d.ts",
   "description": "JavaScript/TypeScript tool for application development.",
   "files": [
-    "dist",
-    "types"
+    "dist"
   ],
   "exports": {
     ".": {
-      "types": "./types/index.d.ts",
+      "types": "./dist/index.d.ts",
       "import": "./dist/index.mjs",
       "default": "./dist/index.js"
     },
     "./runtime": {
-      "types": "./types/runtime/index.d.ts",
+      "types": "./dist/runtime/index.d.ts",
       "import": "./dist/runtime/index.mjs",
       "default": "./dist/runtime/index.js"
     },

@@ -10,7 +10,6 @@
     "forceConsistentCasingInFileNames": true,
     "strictPropertyInitialization": false,
     "noUnusedLocals": false,
-    "allowJs": true,
     "noUnusedParameters": false,
     "types": ["node", "vitest/globals"]
   }
