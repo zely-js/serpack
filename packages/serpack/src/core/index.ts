@@ -339,7 +339,10 @@ class Compiler {
           const path = node.arguments[0].value;
           const resolved = resolver(dirname(filename), path);
 
-          if (!resolved) return;
+          if (!resolved) {
+            node.callee.name = __SERPACK_REQUIRE__;
+            return node;
+          }
 
           if (!(resolved in $.id)) {
             $.id[resolved] = Object.keys($.id).length;
@@ -422,16 +425,13 @@ class Compiler {
 
     if (this.parserOptions.runtime) {
       wrapperHeader = [
-        '(function(modules) {',
         `  var ${__SERPACK_ENV__}=${JSON.stringify({
           target: this.target,
         })};`,
         `  ${
           this.target === 'node' ? 'process.env' : 'window'
         }.__RUNTIME__=JSON.stringify(${__SERPACK_ENV__});`,
-        `const ${__SERPACK_REQUIRE__}=require("serpack/runtime").createRequire(modules);`,
-        `module.exports=${__SERPACK_REQUIRE__}("sp:0")`,
-        '})({',
+        'module.exports=({',
       ];
     }
 
