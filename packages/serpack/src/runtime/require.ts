@@ -9,6 +9,7 @@ export function createNodeRequire(modules: Record<number, any>) {
   const __serpack_module_cache__ = {};
 
   function __serpack_require__(id) {
+    if (modules[id]) return modules[id];
     if (!id.startsWith('sp:')) return require(id);
 
     id = id.slice(3);
