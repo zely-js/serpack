@@ -9,4 +9,6 @@ runtime.createExternalModule('hello', (a, b, module) => {
   };
 });
 
-runtime.execute();
+const mod = runtime.execute();
+
+console.log(mod);

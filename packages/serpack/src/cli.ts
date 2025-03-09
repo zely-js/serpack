@@ -2,7 +2,7 @@
 
 import { CLI } from 'animaux';
 import { rmSync, writeFileSync } from 'fs';
-import { dirname, join, relative } from 'path';
+import { dirname, join } from 'path';
 import { debug } from '@serpack/logger';
 
 import pkg from '../package.json';
@@ -68,7 +68,7 @@ app.action(async ({ options: command }) => {
 
   if (!command['no-run']) {
     try {
-      require(`./${relative(__dirname, target).replace(/\\/g, '/')}`);
+      require(target);
     } catch (e) {
       if (!command.output) {
         rmSync(target);

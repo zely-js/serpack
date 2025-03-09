@@ -1,6 +1,6 @@
 # serpack
 
-Serpack is a JavaScript/TypeScript tool for application development.
+Serpack is a JavaScript/TypeScript tool for application development, powered by [swc](https://swc.rs/).
 
 ```bash
 $ npx serpack ./src/awesome-app.ts # run script

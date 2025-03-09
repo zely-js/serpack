@@ -21,7 +21,7 @@ export class Runtime {
   }
 
   loadModule(id: `sp:${number}`) {
-    this.require(id);
+    return this.require(id);
   }
 }
 
