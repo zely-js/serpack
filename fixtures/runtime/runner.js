@@ -3,7 +3,7 @@ const serpack = require('../../packages/serpack/dist/runtime/index');
 
 const runtime = serpack.createRuntime(join(__dirname, './compiled.js'));
 
-runtime.createExternalModule('hello', (a, b, module) => {
+runtime.createExternalModule('virtual:hello', (a, b, module) => {
   module.exports = {
     name: 'World',
   };
@@ -11,4 +11,4 @@ runtime.createExternalModule('hello', (a, b, module) => {
 
 const mod = runtime.execute();
 
-console.log(mod);
+console.log(serpack.__importDefault(mod));

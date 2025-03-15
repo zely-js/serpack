@@ -8,22 +8,14 @@ import { env } from './env';
 export function createNodeRequire(modules: Record<number, any>) {
   const __serpack_module_cache__ = {};
 
-  function __serpack_require__(id) {
-    if (modules[id]) return modules[id];
-    if (!id.startsWith('sp:')) return require(id);
-
-    id = id.slice(3);
-
-    if (__serpack_module_cache__[id]) {
-      return __serpack_module_cache__[id];
-    }
-
+  function callModule(id: any) {
     const module = { exports: {} };
 
     __serpack_module_cache__[id] = __SERPACK_MODULE_PENDING__;
 
     modules[id].call(
       module.exports,
+      // eslint-disable-next-line no-use-before-define
       __serpack_require__,
       require,
       module,
@@ -32,6 +24,20 @@ export function createNodeRequire(modules: Record<number, any>) {
     __serpack_module_cache__[id] = module.exports;
 
     return module.exports;
+  }
+
+  function __serpack_require__(id: any) {
+    if (modules[id]) {
+      return callModule(id);
+    }
+    if (!id.startsWith('sp:')) return require(id);
+
+    id = id.slice(3);
+
+    if (__serpack_module_cache__[id]) {
+      return __serpack_module_cache__[id];
+    }
+    return callModule(id);
   }
 
   return __serpack_require__;

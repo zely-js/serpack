@@ -4,6 +4,7 @@ import { existsSync, readFileSync, rmSync, writeFileSync } from 'fs';
 import { dirname, isAbsolute, join, relative } from 'path';
 import { CompilerOptions } from './core';
 import { compile } from './compile';
+import { __importDefault } from './runtime';
 
 export interface Options {
   compilerOptions?: CompilerOptions;
@@ -90,5 +91,5 @@ export async function loadConfig(cwd: string = process.cwd()): Promise<Options> 
   }
   const output: any = await loadConfigDev(cwd);
 
-  return output?.default || output;
+  return __importDefault(output);
 }

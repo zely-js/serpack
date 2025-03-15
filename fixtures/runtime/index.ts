@@ -1,5 +1,5 @@
-import { name } from 'hello';
+import virtual from 'hello';
 
-console.log(`Hello ${name}`);
+console.log(`Hello ${virtual.name}`);
 
-export default name;
+export default virtual;

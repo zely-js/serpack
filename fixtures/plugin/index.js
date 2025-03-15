@@ -1,8 +1,11 @@
 /*onSetup*/console.log("\n----------\n");
 (function(modules) {
   var __serpack_module_cache__={};
+  function _interopRequireDefault(mod){
+    return mod&&mod.__esModule ? mod.default : mod
+  }
   function __serpack_require__(id){
-    if (!id.startsWith("sp:")) return require(id);
+    if (!id.startsWith("sp:")) return _interopRequireDefault(require(id));
     if (__serpack_module_cache__[id.slice(3)]) return __serpack_module_cache__[id.slice(3)];
     const module={exports:{}};
     __serpack_module_cache__[id.slice(3)]="__serpack_module_pending__";
