@@ -385,7 +385,7 @@ class Compiler {
   }
 
   async bundle() {
-    const { modules } = this;
+    const { modules, target } = this;
     const codeLines: string[] = [];
     const addedSources = new Set<string>();
     const enableSourcemap = this.parserOptions.sourcemap;
@@ -422,6 +422,15 @@ class Compiler {
       `  module.exports=${__SERPACK_REQUIRE__}("sp:0");`,
       '})({',
     ];
+
+    if (target === 'browser') {
+      wrapperHeader.unshift(
+        '/*browser-support*/',
+        'var module={exports:{}};',
+        // eslint-disable-next-line no-template-curly-in-string
+        'function require(id){throw new Error(`Cannot find module "${id}"`);}'
+      );
+    }
 
     if (this.parserOptions.runtime) {
       wrapperHeader = [
