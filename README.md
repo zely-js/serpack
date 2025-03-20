@@ -10,6 +10,8 @@ Serpack is optimized for high-speed bundling and execution of TypeScript files, 
 
 By default, serpack is built to run Javascript/Typescript, but it also supports module bundling!
 
+> [Read our documentation](https://zely.vercel.app/serpack)
+
 ## Features
 
 - ⚡ **Lightning Fast**: Your JavaScript/TypeScript file will be compiled it in the blink of an eye.
@@ -48,17 +50,17 @@ compile('foo/bar.ts', {
 });
 ```
 
-| Option            | Description                                  | Default    |
-| ----------------- | -------------------------------------------- | ---------- |
-| `nodeExternal`    | exclude `node_modules` from output           | `false`    |
-| `externals`       | module to exclude                            | `[]`       |
-| `runtime`         | enable runtime (output size will be smaller) | `[]`       |
-| `parserOptions`   | Acorn parse options                          | `{}`       |
-| `globals`         | Global variable settings (swc)               |            |
-| `resolverOptions` | oxc-resolver options                         | `{}`       |
-| `type`            | Type (`script` \| `module`)                  | `"module"` |
-| `banner`          | banner                                       | `""`       |
-| `footer`          | footer                                       | `""`       |
+| Option                                                                       | Description                                  | Default    |
+| ---------------------------------------------------------------------------- | -------------------------------------------- | ---------- |
+| [`nodeExternal`](https://zely.vercel.app/serpack/options#nodeexternal)       | exclude `node_modules` from output           | `false`    |
+| [`externals`](https://zely.vercel.app/serpack/options#externals)             | module to exclude                            | `[]`       |
+| [`runtime`](https://zely.vercel.app/serpack/options#runtime)                 | enable runtime (output size will be smaller) | `[]`       |
+| [`parserOptions`](https://zely.vercel.app/serpack/options#parseroptions)     | Acorn parse options                          | `{}`       |
+| [`globals`](https://zely.vercel.app/serpack/options#globals)                 | Global variable settings (swc)               |            |
+| [`resolverOptions`](https://zely.vercel.app/serpack/options#resolveroptions) | oxc-resolver options                         | `{}`       |
+| [`type`](https://zely.vercel.app/serpack/options#globals)                    | Type (`script` \| `module`)                  | `"module"` |
+| [`banner`](https://zely.vercel.app/serpack/options#globals)                  | banner                                       | `""`       |
+| [`footer`](https://zely.vercel.app/serpack/options#globals)                  | footer                                       | `""`       |
 
 > 🚧 The sourcemap generation is still under development.
 
