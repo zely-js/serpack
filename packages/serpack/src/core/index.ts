@@ -404,7 +404,12 @@ class Compiler {
     debug(`modules: ${JSON.stringify(this.id)}`);
 
     if (enableSourcemap) {
-      generator = new SourceMapGenerator({ file: 'bundle.js' });
+      const sourcemapRoot =
+        this.parserOptions?.sourcemapOptions?.sourcemapRoot || dirname(this.entry);
+      generator = new SourceMapGenerator({
+        file: 'bundle.js',
+        sourceRoot: sourcemapRoot,
+      });
     }
 
     let wrapperHeader = [
@@ -452,34 +457,53 @@ class Compiler {
       const moduleCode = `${banner}${module.code} }),`;
       codeLines.push(moduleCode);
 
-      if (enableSourcemap) {
+      if (enableSourcemap && module.map) {
         const consumer = await new SourceMapConsumer(module.map);
+        const sourcemapRoot =
+          this.parserOptions?.sourcemapOptions?.sourcemapRoot || dirname(this.entry);
 
         consumer.eachMapping((mapping) => {
-          generator.addMapping({
-            source: relative(
-              this.parserOptions?.sourcemapOptions?.sourcemapRoot || dirname(this.entry),
-              mapping.source
-            ),
-            original: {
-              line: mapping.originalLine,
-              column: mapping.originalColumn,
-            },
-            generated: {
-              line: currentLine,
-              column: mapping.generatedColumn + banner.length,
-            },
-            name: mapping.name,
-          });
+          if (mapping.source) {
+            // Normalize the source path to be relative to sourcemapRoot
+            let originalSource = mapping.source;
+            if (isAbsolute(originalSource)) {
+              originalSource = relative(sourcemapRoot, originalSource);
+            } else {
+              // If the source is already relative, make sure it's relative to the right base
+              originalSource = relative(
+                sourcemapRoot,
+                join(dirname(file), originalSource)
+              );
+            }
 
-          if (mapping.source && !addedSources.has(mapping.source)) {
-            addedSources.add(mapping.source);
-            generator.setSourceContent(
-              mapping.source,
-              consumer.sourceContentFor(mapping.source, true)
-            );
+            // Normalize to use forward slashes for consistency
+            originalSource = originalSource.replace(/\\/g, '/');
+
+            generator.addMapping({
+              source: originalSource,
+              original: {
+                line: mapping.originalLine,
+                column: mapping.originalColumn,
+              },
+              generated: {
+                line: currentLine,
+                column: mapping.generatedColumn + banner.length,
+              },
+              name: mapping.name,
+            });
+
+            // Add source content if not already added
+            if (!addedSources.has(originalSource)) {
+              const sourceContent = consumer.sourceContentFor(mapping.source, true);
+              if (sourceContent) {
+                generator.setSourceContent(originalSource, sourceContent);
+                addedSources.add(originalSource);
+              }
+            }
           }
         });
+
+        consumer.destroy();
       }
 
       currentLine += moduleCode.split('\n').length;

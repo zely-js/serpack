@@ -28,7 +28,7 @@ async function parse(err: Error, map?: string) {
   const sourcemap = new SourceMapConsumer(sourcemapRaw);
 
   const result = (await sourcemap).originalPositionFor(trace);
-  const target = join(dirname(sliced.join(':')), result.source);
+  const target = result.source;
 
   const errorFile = readFileSync(target, 'utf-8').split('\n');
   const errorLine = errorFile[result.line - 1];
