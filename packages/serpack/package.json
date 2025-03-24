@@ -33,7 +33,8 @@
     "escodegen": "^2.1.0",
     "estree-walker": "2.0.2",
     "oxc-resolver": "^3.0.3",
-    "source-map": "^0.7.4"
+    "source-map": "^0.7.4",
+    "vlq": "^2.0.4"
   },
   "devDependencies": {
     "serpack-dev": "*"
