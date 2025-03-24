@@ -146,7 +146,8 @@ class Compiler {
       }
 
       if (!this.parserOptions?.type || this.parserOptions?.type === 'module') {
-        return { code: load(target, source), map: {} };
+        const loaded = load(target, source);
+        return { code: loaded.code, map: loaded.map };
       }
 
       error(`unknown options.type: ${this.parserOptions?.type}`);
