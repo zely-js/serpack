@@ -457,7 +457,7 @@ class Compiler {
       const moduleCode = `${banner}${module.code} }),`;
       codeLines.push(moduleCode);
 
-      if (enableSourcemap && module.map) {
+      if (enableSourcemap && Object.keys(module.map).length > 0) {
         const consumer = await new SourceMapConsumer(module.map);
         const sourcemapRoot =
           this.parserOptions?.sourcemapOptions?.sourcemapRoot || dirname(this.entry);
