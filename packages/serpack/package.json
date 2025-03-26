@@ -30,6 +30,7 @@
     "@swc/helpers": "^0.5.15",
     "acorn": "^8.14.0",
     "animaux": "^0.1.0",
+    "deepmerge-ts": "^7.1.5",
     "escodegen": "^2.1.0",
     "estree-walker": "2.0.2",
     "oxc-resolver": "^3.0.3",
