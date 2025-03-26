@@ -3,7 +3,7 @@
 import { dirname, extname, isAbsolute, join, parse as parsePath, relative } from 'path';
 import { readFileSync } from 'fs';
 
-import { transform } from '@swc/core';
+import { Options, transform } from '@swc/core';
 import { debug, error, warn } from '@serpack/logger';
 import type { Options as ParseOptions } from 'acorn';
 import { parse } from 'acorn';
@@ -11,7 +11,7 @@ import { ResolverFactory, NapiResolveOptions } from 'oxc-resolver';
 import { walk } from 'estree-walker';
 import { generate } from 'escodegen';
 import { SourceMapGenerator, SourceMapConsumer } from 'source-map';
-
+import { deepmerge } from 'deepmerge-ts';
 import { builtinModules } from 'module';
 import { importToRequire } from './parse';
 import {
@@ -69,6 +69,8 @@ export interface CompilerOptions {
   };
 
   plugins?: Plugin[];
+
+  swcOptions?: Options;
 }
 
 class Compiler {
@@ -165,36 +167,42 @@ class Compiler {
       this.parserOptions.globals.vars.__dirname = JSON.stringify(dirname(filename));
     }
 
-    const output = await transform(source, {
-      filename,
-      isModule: true,
-      sourceMaps: true,
-      module: {
-        // https://swc.rs/docs/configuration/modules#commonjs
-        // TODO: Add support for other module types
-        type: 'commonjs',
-        strict: false,
-      },
-      jsc: {
-        externalHelpers: !!this.parserOptions.runtime || false,
-        target: 'es2015',
-        parser: {
-          syntax: this.sourceType === 'typescript' ? 'typescript' : 'ecmascript',
-        },
-        minify: {
-          compress: true,
-          mangle: true,
-        },
-        transform: {
-          optimizer: {
-            globals: {
-              envs: this.parserOptions.globals?.env || {},
-              vars: this.parserOptions.globals?.vars || {},
+    const output = await transform(
+      source,
+      deepmerge(
+        {
+          filename,
+          isModule: true,
+          sourceMaps: true,
+          module: {
+            // https://swc.rs/docs/configuration/modules#commonjs
+            // TODO: Add support for other module types
+            type: 'commonjs',
+            strict: false,
+          },
+          jsc: {
+            externalHelpers: !!this.parserOptions.runtime || false,
+            target: 'es2015',
+            parser: {
+              syntax: this.sourceType === 'typescript' ? 'typescript' : 'ecmascript',
+            },
+            minify: {
+              compress: true,
+              mangle: true,
+            },
+            transform: {
+              optimizer: {
+                globals: {
+                  envs: this.parserOptions.globals?.env || {},
+                  vars: this.parserOptions.globals?.vars || {},
+                },
+              },
             },
           },
         },
-      },
-    });
+        this.parserOptions.swcOptions
+      )
+    );
 
     for await (const element of this.pluginArray('onCompile')) {
       const pluginOutput = await element({
