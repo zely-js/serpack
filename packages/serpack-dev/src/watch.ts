@@ -3,6 +3,7 @@ import { Compiler, Options } from 'serpack';
 import { FSWatcher, watch } from 'chokidar';
 import { debug, info } from '@serpack/logger';
 import { mkdirSync, writeFileSync } from 'fs';
+import 'colors';
 
 export type EntryOutput = string | { outfile: string; map: string };
 
