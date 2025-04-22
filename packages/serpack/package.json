@@ -1,6 +1,6 @@
 {
   "name": "serpack",
-  "version": "0.1.23",
+  "version": "0.1.24",
   "bin": "./dist/cli.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",

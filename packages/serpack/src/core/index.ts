@@ -473,19 +473,16 @@ class Compiler {
 
         consumer.eachMapping((mapping) => {
           if (mapping.source) {
-            // Normalize the source path to be relative to sourcemapRoot
             let originalSource = mapping.source;
             if (isAbsolute(originalSource)) {
               originalSource = relative(sourcemapRoot, originalSource);
             } else {
-              // If the source is already relative, make sure it's relative to the right base
               originalSource = relative(
                 sourcemapRoot,
                 join(dirname(file), originalSource)
               );
             }
 
-            // Normalize to use forward slashes for consistency
             originalSource = originalSource.replace(/\\/g, '/');
 
             generator.addMapping({
