@@ -5,7 +5,7 @@ import { readFileSync } from 'fs';
 
 import { Options, transform } from '@swc/core';
 import { debug, error, warn } from '@serpack/logger';
-import type { Options as ParseOptions } from 'acorn';
+import type { CallExpression, Node, Options as ParseOptions } from 'acorn';
 import { parse } from 'acorn';
 import { ResolverFactory, NapiResolveOptions } from 'oxc-resolver';
 import { walk } from 'estree-walker';
@@ -44,13 +44,17 @@ export interface CompilerOptions {
 
   type?: 'script' | 'module';
 
+  /** Banner */
   banner?: string;
+  /** Footer */
   footer?: string;
 
-  /** @deprecated use `options.externals` instead */
+  /** @deprecated use `options.externals` instead. */
   forceExternal?: string[];
 
+  /** Exclude every node_modules */
   nodeExternal?: boolean;
+  /** Exclude specific modules */
   externals?: string[];
 
   /**
@@ -71,6 +75,10 @@ export interface CompilerOptions {
   plugins?: Plugin[];
 
   swcOptions?: Options;
+
+  modifier?: {
+    caller?: (node: CallExpression) => Node;
+  };
 }
 
 class Compiler {
@@ -338,6 +346,8 @@ class Compiler {
 
     const outputAst = walk(ast, {
       enter(node) {
+        // ** Core **
+
         // require statement
         if (
           node.type === 'CallExpression' &&
@@ -381,6 +391,16 @@ class Compiler {
           node.source.value = `sp:${id}`;
 
           this.replace(importToRequire(node));
+        }
+      },
+      leave(node) {
+        // ** Modifier **
+
+        // options.modifier.caller
+
+        if (node.type === 'CallExpression' && parserOptions.modifier?.caller) {
+          node = parserOptions.modifier?.caller(node) || node;
+          this.replace(node);
         }
       },
     });
