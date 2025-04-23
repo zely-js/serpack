@@ -1,6 +1,6 @@
 export default <import('serpack').Options>{
   compilerOptions: {
-    banner: "const __log=(...args)=>console.log(args.join(''));",
+    banner: 'const __log=(...args)=>console.log("message: " + args.join(\'\'));',
     modifier: {
       caller(node) {
         const wrapCallExpression = {
