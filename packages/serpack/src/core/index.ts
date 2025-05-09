@@ -187,6 +187,7 @@ class Compiler {
             // TODO: Add support for other module types
             type: 'commonjs',
             strict: false,
+            strictMode: false,
           },
           jsc: {
             externalHelpers: !!this.parserOptions.runtime || false,
