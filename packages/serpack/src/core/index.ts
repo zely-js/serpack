@@ -3,7 +3,6 @@
 import { dirname, extname, isAbsolute, join, parse as parsePath, relative } from 'path';
 import { readFileSync } from 'fs';
 
-import { Options /* transform */ } from '@swc/core';
 import { debug, error, warn } from '@serpack/logger';
 import type { CallExpression, Node, Options as ParseOptions } from 'acorn';
 import { parse } from 'acorn';
@@ -37,7 +36,6 @@ export interface CompilerOptions {
 
   globals?: {
     vars?: Record<string, string>;
-    env?: Record<string, string>;
   };
 
   /** `oxc-resolver` options */
@@ -75,7 +73,8 @@ export interface CompilerOptions {
 
   plugins?: Plugin[];
 
-  swcOptions?: Options;
+  // swcOptions?: Options;
+  esbuildOptions?: TransformOptions;
 
   modifier?: {
     caller?: (node: CallExpression, parent: Node) => Node;
@@ -220,13 +219,15 @@ class Compiler {
       deepmerge(
         {
           minify: true,
-          define: {},
+          define: {
+            ...(this.parserOptions.globals.vars || {}),
+          },
           sourcemap: true,
           format: 'cjs',
           loader: 'ts',
-          target: 'node12',
+          platform: 'node',
         } as TransformOptions,
-        {}
+        this.parserOptions.esbuildOptions || {}
       )
     );
 
