@@ -1,12 +1,12 @@
 # serpack
 
-Serpack is a JavaScript/TypeScript tool for application development, powered by [esbuild](https://esbuild.github.io/).
+Serpack is a JavaScript/TypeScript tool for application development, powered by [swc](https://swc.rs/).
 
 ```bash
 $ npx serpack ./src/awesome-app.ts # run script
 ```
 
-Serpack is optimized for high-speed bundling and execution of TypeScript files, leveraging [esbuild](https://esbuild.github.io/) as a transformer and [oxc](https://oxc.rs/) as a resolver for enhanced performance.
+Serpack is optimized for high-speed bundling and execution of TypeScript files, leveraging [swc](https://swc.rs/) as a transformer and [oxc](https://oxc.rs/) as a resolver for enhanced performance.
 
 By default, serpack is built to run Javascript/Typescript, but it also supports module bundling!
 

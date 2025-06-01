@@ -3,15 +3,15 @@
 import { dirname, extname, isAbsolute, join, parse as parsePath, relative } from 'path';
 import { readFileSync } from 'fs';
 
+import { Options, transform } from '@swc/core';
 import { debug, error, warn } from '@serpack/logger';
 import type { CallExpression, Node, Options as ParseOptions } from 'acorn';
 import { parse } from 'acorn';
 import { ResolverFactory, NapiResolveOptions } from 'oxc-resolver';
 import { walk } from 'estree-walker';
+import { generate } from 'escodegen';
 import { SourceMapGenerator, SourceMapConsumer } from 'source-map';
 import { deepmerge } from 'deepmerge-ts';
-import { generate } from 'astring';
-import { transform as esbuildTransform, TransformOptions } from 'esbuild';
 import { builtinModules } from 'module';
 import { importToRequire } from './parse';
 import {
@@ -36,6 +36,7 @@ export interface CompilerOptions {
 
   globals?: {
     vars?: Record<string, string>;
+    env?: Record<string, string>;
   };
 
   /** `oxc-resolver` options */
@@ -73,8 +74,7 @@ export interface CompilerOptions {
 
   plugins?: Plugin[];
 
-  // swcOptions?: Options;
-  esbuildOptions?: TransformOptions;
+  swcOptions?: Options;
 
   modifier?: {
     caller?: (node: CallExpression, parent: Node) => Node;
@@ -175,7 +175,6 @@ class Compiler {
       this.parserOptions.globals.vars.__dirname = JSON.stringify(dirname(filename));
     }
 
-    /*
     const output = await transform(
       source,
       deepmerge(
@@ -213,29 +212,6 @@ class Compiler {
         this.parserOptions.swcOptions
       )
     );
-    */
-    const output = await esbuildTransform(
-      source,
-      deepmerge(
-        {
-          minify: true,
-          define: {
-            ...(this.parserOptions.globals.vars || {}),
-          },
-          sourcemap: true,
-          format: 'cjs',
-          loader: 'ts',
-          platform: 'node',
-        } as TransformOptions,
-        this.parserOptions.esbuildOptions || {}
-      )
-    );
-
-    if (output.warnings) {
-      for (const warning of output.warnings) {
-        warn(warning.text);
-      }
-    }
 
     for await (const element of this.pluginArray('onCompile')) {
       const pluginOutput = await element({
@@ -335,7 +311,7 @@ class Compiler {
     const parsed = this.parseModule(target, output.code, this.parserOptions);
 
     this.modules[target] = {
-      code: generate(parsed.ast, {}),
+      code: generate(parsed.ast, { format: { compact: true }, comment: true }),
       map: output.map,
     };
 
@@ -397,7 +373,6 @@ class Compiler {
           $.modules.push(path);
           node.callee.name = __SERPACK_REQUIRE__;
           node.arguments[0].value = `sp:${id}`;
-          node.arguments[0].raw = `"sp:${id}"`;
         }
 
         // import statement
