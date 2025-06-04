@@ -77,7 +77,7 @@ export interface CompilerOptions {
   swcOptions?: Options;
 
   modifier?: {
-    caller?: (node: CallExpression, parent: Node) => Node;
+    caller?: (node: CallExpression, parent: Node, ctx: { filename: string }) => Node;
   };
 }
 
@@ -400,7 +400,7 @@ class Compiler {
         // options.modifier.caller
 
         if (node.type === 'CallExpression' && parserOptions.modifier?.caller) {
-          node = parserOptions.modifier?.caller(node, parent) || node;
+          node = parserOptions.modifier?.caller(node, parent, { filename }) || node;
           this.replace(node);
         }
       },
