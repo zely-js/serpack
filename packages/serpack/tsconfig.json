@@ -5,7 +5,8 @@
     "outDir": "./dist/",
     "paths": {
       "~/*": ["./"]
-    }
+    },
+    "types": ["./_dev.d.ts", "@types/node"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "lib/**/*.ts", "lib/**/*.tsx"],
   "exclude": ["**/*.test.ts", "**/*.test.tsx"]

@@ -4,7 +4,7 @@ import { dirname, extname, isAbsolute, join, parse as parsePath, relative } from
 import { readFileSync } from 'fs';
 
 import { Options, transform } from '@swc/core';
-import { debug, error, warn } from '@serpack/logger';
+import { debug, dev, error, warn } from '@serpack/logger';
 import type { CallExpression, Node, Options as ParseOptions } from 'acorn';
 import { parse } from 'acorn';
 import { ResolverFactory, NapiResolveOptions } from 'oxc-resolver';
@@ -100,6 +100,11 @@ class Compiler {
 
   target: 'node' | 'browser';
 
+  _DEV: {
+    startTime: number;
+    sum: number;
+  };
+
   constructor(entry: string, compilerOptions?: CompilerOptions) {
     if (!isAbsolute(entry)) {
       entry = join(process.cwd(), entry);
@@ -134,6 +139,19 @@ class Compiler {
       const output = element(this.parserOptions);
       if (output) this.parserOptions = { ...this.parserOptions, ...output };
     }
+
+    // (DEV) For trace bottleneck
+    if (__DEV__) {
+      this._DEV = { startTime: performance.now(), sum: 0 };
+    }
+  }
+
+  // (DEV) For get processing time
+  getTime() {
+    const time = performance.now() - this._DEV.startTime;
+    this._DEV.startTime = performance.now();
+    this._DEV.sum += time;
+    return time.toFixed(1);
   }
 
   pluginArray<T extends keyof Plugin>(field: T): Plugin[T][] {
@@ -212,6 +230,11 @@ class Compiler {
         this.parserOptions.swcOptions
       )
     );
+
+    // (DEV) Check module compilation time
+    if (__DEV__) {
+      dev(`Module "${filename}" compiled in ${this.getTime()}`);
+    }
 
     for await (const element of this.pluginArray('onCompile')) {
       const pluginOutput = await element({
@@ -302,9 +325,9 @@ class Compiler {
       this.id[target] = Object.keys(this.id).length;
     }
 
-    // disable node_modules
-
     debug(`Resolving module: ${target}`);
+
+    // ## Compile Start
 
     const output = await this.transform(target);
 
@@ -407,6 +430,11 @@ class Compiler {
     });
 
     this.id = $.id;
+
+    // (DEV) Check module parsing time
+    if (__DEV__) {
+      dev(`Module "${filename}" parsed in ${this.getTime()}`);
+    }
 
     return {
       ast: outputAst,
@@ -545,6 +573,11 @@ class Compiler {
     }
 
     // console.log(generator.toString());
+
+    // (DEV) Check module bundle time
+    if (__DEV__) {
+      dev(`Module bundled in ${this.getTime()} (sum: ${this._DEV.sum.toFixed(2)})`);
+    }
 
     return {
       code: codeLines.join('\n'),
