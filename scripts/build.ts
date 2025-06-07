@@ -7,6 +7,7 @@ import { dirname, join } from 'path';
 import { esmSplitCodeToCjs } from './splitting';
 
 const buildPkgs = glob.globSync(['packages/**/*/build.json']);
+const isProd = !process.argv.includes('--dev');
 
 for (const pkg of buildPkgs) {
   console.log(`> ${join(process.cwd(), pkg)}`);
@@ -48,7 +49,12 @@ for (const pkg of buildPkgs) {
       format: 'esm',
       bundle: true,
       chunkNames: 'chunks/[hash]',
+      minifySyntax: true,
       outExtension: { '.js': '.mjs' },
+
+      define: {
+        __DEV__: (!isProd).toString(),
+      },
     });
 
   esmBuild();

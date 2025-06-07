@@ -57,4 +57,8 @@ function debug(message: string): void {
   }
 }
 
-export { error, warn, info, debug };
+function dev(message: string): void {
+  console.debug(`[DEV]: ${message}`.gray);
+}
+
+export { error, warn, info, debug, dev };
