@@ -1,7 +1,7 @@
 /* eslint-disable no-loop-func */
 /* eslint-disable default-param-last */
 import { dirname, extname, isAbsolute, join, parse as parsePath, relative } from 'path';
-import { readFileSync } from 'fs';
+import { readFileSync, writeFileSync } from 'fs';
 
 import { Options, transform } from '@swc/core';
 import { debug, dev, error, warn } from '@serpack/logger';
@@ -396,6 +396,7 @@ class Compiler {
           $.modules.push(path);
           node.callee.name = __SERPACK_REQUIRE__;
           node.arguments[0].value = `sp:${id}`;
+          node.arguments[0].raw = `'${node.arguments[0].value}'`;
         }
 
         // import statement
@@ -428,6 +429,10 @@ class Compiler {
         }
       },
     });
+
+    if (__DEV__) {
+      writeFileSync('_output.json', JSON.stringify(outputAst));
+    }
 
     this.id = $.id;
 
