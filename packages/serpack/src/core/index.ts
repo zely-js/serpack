@@ -5,11 +5,10 @@ import { readFileSync, writeFileSync } from 'fs';
 
 import { Options, transform } from '@swc/core';
 import { debug, dev, error, warn } from '@serpack/logger';
-import type { CallExpression, Node, Options as ParseOptions } from 'acorn';
-import { parse } from 'acorn';
+import { parseSync, Node, CallExpression } from 'oxc-parser';
 import { ResolverFactory, NapiResolveOptions } from 'oxc-resolver';
 import { walk } from 'estree-walker';
-import { generate } from 'escodegen';
+import { generate, GENERATOR } from 'astring';
 import { SourceMapGenerator, SourceMapConsumer } from 'source-map';
 import { deepmerge } from 'deepmerge-ts';
 import { builtinModules } from 'module';
@@ -31,9 +30,6 @@ const TS_EXT = ['ts', 'cts', 'mts', 'tsx'];
 
 /** https://zely.vercel.app/serpack/options */
 export interface CompilerOptions {
-  /** `acorn` parser options */
-  parserOptions?: ParseOptions;
-
   globals?: {
     vars?: Record<string, string>;
     env?: Record<string, string>;
@@ -334,7 +330,18 @@ class Compiler {
     const parsed = this.parseModule(target, output.code, this.parserOptions);
 
     this.modules[target] = {
-      code: generate(parsed.ast, { format: { compact: true }, comment: true }),
+      code: generate(parsed.ast, {
+        generator: {
+          ...GENERATOR,
+
+          // @ts-ignore
+          ParenthesizedExpression(node, state) {
+            state.write('(');
+            this[node.expression.type](node.expression, state);
+            state.write(')');
+          },
+        },
+      }),
       map: output.map,
     };
 
@@ -354,11 +361,8 @@ class Compiler {
   parseModule(filename: string, sourcecode?: string, parserOptions?: CompilerOptions) {
     const source = sourcecode ?? readFileSync(filename, 'utf-8');
 
-    const ast = parse(source, {
+    const { program: ast } = parseSync(filename, source, {
       sourceType: 'module',
-      ecmaVersion: 'latest',
-
-      ...parserOptions?.parserOptions,
     });
 
     const $ = {
