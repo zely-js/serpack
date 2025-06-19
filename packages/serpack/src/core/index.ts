@@ -6,7 +6,7 @@ import { readFileSync, writeFileSync } from 'fs';
 import { Options, transform } from '@swc/core';
 import { debug, dev, error, warn } from '@serpack/logger';
 import { parseSync, Node, CallExpression } from 'oxc-parser';
-import { ResolverFactory, NapiResolveOptions } from 'oxc-resolver';
+import { ResolverFactory, NapiResolveOptions, ResolveResult } from 'oxc-resolver';
 import { walk } from 'estree-walker';
 import { generate, GENERATOR } from 'astring';
 import { SourceMapGenerator, SourceMapConsumer } from 'source-map';
@@ -246,9 +246,26 @@ class Compiler {
     return { code: output.code, map: JSON.parse(output.map) };
   }
 
-  resolve(dirname: string = process.cwd(), to: string) {
+  resolve(dirname: string = process.cwd(), to: string, by?: string) {
     const out = this.resolver.sync(dirname, to);
+    const output = this.resolveDev(dirname, to, out);
 
+    for (const element of this.pluginArray('onResolve')) {
+      element({
+        resolved: out.path,
+        type: output ? 'internal' : 'external',
+        original: {
+          dirname,
+          to,
+        },
+        by,
+      });
+    }
+
+    return output;
+  }
+
+  resolveDev(dirname: string = process.cwd(), to: string, out: ResolveResult) {
     const target = out.path;
 
     if (!target) return;
@@ -308,7 +325,7 @@ class Compiler {
     target: string = this.entry,
     caller: string = join(process.cwd(), 'path')
   ) {
-    const _target = this.resolve(dirname(caller), target);
+    const _target = this.resolve(dirname(caller), target, target);
 
     if (!_target) {
       warn(`Cannot resolve module: ${target}`);
@@ -350,7 +367,7 @@ class Compiler {
         continue;
       }
 
-      const resolved = this.resolve(dirname(target), module);
+      const resolved = this.resolve(dirname(target), module, target);
 
       if (!this.modules[resolved]) {
         await this.compile(module, target);
@@ -384,7 +401,7 @@ class Compiler {
           node.arguments[0].type === 'Literal'
         ) {
           const path = node.arguments[0].value;
-          const resolved = resolver(dirname(filename), path);
+          const resolved = resolver(dirname(filename), path, filename);
 
           if (!resolved) {
             node.callee.name = __SERPACK_REQUIRE__;
@@ -406,7 +423,7 @@ class Compiler {
         // import statement
         if (node.type === 'ImportDeclaration' && node.source.type === 'Literal') {
           const path = node.source.value;
-          const resolved = resolver(dirname(filename), path);
+          const resolved = resolver(dirname(filename), path, filename);
 
           if (!resolved) return;
 

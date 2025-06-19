@@ -15,6 +15,18 @@ export type PluginContextOnCompile = {
 
 type CompilerOutput<T = any> = Promise<T | void> | T | void;
 
+export interface PluginContextOnResolve {
+  resolved: string;
+  original: {
+    dirname: string;
+    to: string;
+  };
+  type: 'internal' | 'external';
+  by?: string;
+}
+
+export type Promisable<T> = Promise<T> | T;
+
 export interface Plugin {
   /** `name` is used for debugging */
   name?: string;
@@ -25,9 +37,11 @@ export interface Plugin {
 
   onCompile?(
     context: PluginContextOnCompile
-  ): CompilerOutput<{ code: string; map?: any }>;
+  ): Promisable<CompilerOutput<{ code: string; map?: any }>>;
 
-  onBundle?(): CompilerOutput<void>;
+  onResolve?(context: PluginContextOnResolve): void;
+
+  onBundle?(): Promisable<CompilerOutput<void>>;
 }
 
 /**
