@@ -248,7 +248,7 @@ class Compiler {
 
   resolve(dirname: string = process.cwd(), to: string, by?: string) {
     const out = this.resolver.sync(dirname, to);
-    const output = this.resolveDev(dirname, to, out);
+    const output = this.resolveDev(to, out);
 
     for (const element of this.pluginArray('onResolve')) {
       element({
@@ -265,7 +265,7 @@ class Compiler {
     return output;
   }
 
-  resolveDev(dirname: string = process.cwd(), to: string, out: ResolveResult) {
+  resolveDev(to: string, out: ResolveResult) {
     const target = out.path;
 
     if (!target) return;
