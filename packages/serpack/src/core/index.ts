@@ -248,18 +248,19 @@ class Compiler {
 
   resolve(dirname: string = process.cwd(), to: string, by?: string) {
     const out = this.resolver.sync(dirname, to);
-    const output = this.resolveDev(to, out);
+    let output = this.resolveDev(to, out);
 
     for (const element of this.pluginArray('onResolve')) {
-      element({
-        resolved: out.path,
-        type: output ? 'internal' : 'external',
-        original: {
-          dirname,
-          to,
-        },
-        by,
-      });
+      output =
+        element({
+          resolved: out.path,
+          type: output ? 'internal' : 'external',
+          original: {
+            dirname,
+            to,
+          },
+          by,
+        }) ?? output;
     }
 
     return output;

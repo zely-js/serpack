@@ -28,7 +28,6 @@ for (var o in r) Object.defineProperty(e, o, {
   enumerable: !0,
   get: r[o]
 });
-const t = __serpack_require__("./core");
 function n(e, r) {
   return (Object.keys(e).forEach(function (o) {
     "default" === o || Object.prototype.hasOwnProperty.call(r, o) || Object.defineProperty(r, o, {
@@ -195,8 +194,9 @@ class j {
       }, o.parserOptions.swcOptions));
       __DEV__ && ((0, i.dev))(`Module "${n}" compiled in ${o.getTime()}`);
       var a, p, d, v, f, y, h, O, g = !1, b = !1;
+      var a, p, d, v, f, y, h, g, O = !1, b = !1;
       try {
-        for (var R, j = _(o.pluginArray('onCompile')); g = !(R = yield j.next()).done; g = !1) {
+        for (var R, j = _(o.pluginArray('onCompile')); O = !(R = yield j.next()).done; O = !1) {
           let e = R.value, r = yield e({
             filename: {
               original: n,
@@ -208,12 +208,12 @@ class j {
           (r && r.code && (l.code = r.code), r && r.map && (l.code = r.map));
         }
       } catch (e) {
-        (b = !0, O = e);
+        (b = !0, g = e);
       } finally {
         try {
-          g && null != j.return && (yield j.return());
+          O && null != j.return && (yield j.return());
         } finally {
-          if (b) throw O;
+          if (b) throw g;
         }
       }
       return {
@@ -222,7 +222,19 @@ class j {
       };
     })();
   }
-  resolve(t = process.cwd(), n) {
+  resolve(e = process.cwd(), r, t) {
+    let i = this.resolver.sync(e, r), n = this.resolveDev(r, i);
+    for (let o of this.pluginArray('onResolve')) o({
+      resolved: i.path,
+      type: n ? 'internal' : 'external',
+      original: {
+        dirname: e,
+        to: r
+      },
+      by: t
+    });
+    return n;
+  }
     var o, s, l, a, u;
     let d = this.resolver.sync(t, n), c = d.path;
     if (!c) return;
@@ -403,7 +415,7 @@ class j {
         (x = !0, R = e);
       } finally {
         try {
-          j && null != $.return && (yield $.return());
+          j && null != P.return && (yield P.return());
         } finally {
           if (x) throw R;
         }
@@ -415,13 +427,13 @@ class j {
     })();
   }
   constructor(t, i) {
-    for (let n of ((O(this, "entry", void 0), O(this, "source", void 0), O(this, "modules", void 0), O(this, "parserOptions", void 0), O(this, "sourceType", void 0), O(this, "resolver", void 0), O(this, "resolverOptions", void 0), O(this, "id", void 0), O(this, "target", void 0), O(this, "_DEV", void 0), ((0, e.isAbsolute))(t) || (t = ((0, e.join))(process.cwd(), t)), this.entry = t, this.modules = {}, this.source = ((0, r.readFileSync))(t, 'utf-8'), this.parserOptions = i || ({}), this.sourceType = R.includes(((0, e.parse))(t).ext.slice(1)) ? "typescript" : "javascript", this.resolverOptions = this.parserOptions.resolverOptions || ({}), this.id = {}, this.target = this.parserOptions.target || 'node', this.resolver = new o.ResolverFactory(g({
+    for (let n of ((g(this, "entry", void 0), g(this, "source", void 0), g(this, "modules", void 0), g(this, "parserOptions", void 0), g(this, "sourceType", void 0), g(this, "resolver", void 0), g(this, "resolverOptions", void 0), g(this, "id", void 0), g(this, "target", void 0), g(this, "_DEV", void 0), ((0, e.isAbsolute))(t) || (t = ((0, e.join))(process.cwd(), t)), this.entry = t, this.modules = {}, this.source = ((0, r.readFileSync))(t, 'utf-8'), this.parserOptions = i || ({}), this.sourceType = R.includes(((0, e.parse))(t).ext.slice(1)) ? "typescript" : "javascript", this.resolverOptions = this.parserOptions.resolverOptions || ({}), this.id = {}, this.target = this.parserOptions.target || 'node', this.resolver = new o.ResolverFactory(O({
       conditionNames: ['node', 'import'],
       mainFields: ['module', 'main'],
       extensions: ['.js', '.jsx', '.ts', '.tsx', '.json', '.d.ts']
     }, this.resolverOptions)), this.pluginArray('onSetup')))) {
       let e = n(this.parserOptions);
-      e && (this.parserOptions = g({}, this.parserOptions, e));
+      e && (this.parserOptions = O({}, this.parserOptions, e));
     }
     __DEV__ && (this._DEV = {
       startTime: performance.now(),
@@ -632,7 +644,7 @@ const n = '__serpack_require__', t = 'require', u = '__esm__', c = '__serpack_mo
     return r;
   }
 }));
-const e = __serpack_require__("path"), n = __serpack_require__("@serpack/logger"), t = __serpack_require__("vlq");
+const e = __serpack_require__("path"), n = __serpack_require__('sp:8'), t = __serpack_require__("vlq");
 function r(r, o) {
   let s = ((0, e.extname))(r).slice(1);
   return 'json' === s ? {
@@ -698,7 +710,7 @@ for (var t in r) Object.defineProperty(e, t, {
   enumerable: !0,
   get: r[t]
 });
-const n = __serpack_require__("@serpack/logger"), i = __serpack_require__("fs"), o = __serpack_require__("path"), u = __serpack_require__("./compile"), l = __serpack_require__("./runtime");
+const n = __serpack_require__('sp:8'), i = __serpack_require__("fs"), o = __serpack_require__("path"), u = __serpack_require__('sp:5'), l = __serpack_require__('sp:11');
 function c(e) {
   var r, t, n, i = 2;
   for ("undefined" != typeof Symbol && ((t = Symbol.asyncIterator, n = Symbol.iterator)); i--; ) {
@@ -885,7 +897,7 @@ function j() {
     return o;
   }
 }));
-const e = __serpack_require__("@serpack/logger"), r = __serpack_require__("./core");
+const e = __serpack_require__('sp:8'), r = __serpack_require__('sp:1');
 function n(e, r, n, o, t, i, u) {
   try {
     var c = e[i](u), l = c.value;
@@ -935,7 +947,7 @@ function t() {
 }
 (Object.defineProperty(exports, "__esModule", {
   value: !0
-}), e(__serpack_require__("./require"), exports), e(__serpack_require__("./env"), exports), e(__serpack_require__("./runtime"), exports), e(__serpack_require__("./resolve-esm"), exports));
+}), e(__serpack_require__('sp:12'), exports), e(__serpack_require__('sp:13'), exports), e(__serpack_require__('sp:14'), exports), e(__serpack_require__('sp:15'), exports));
  }),
 /* D:\serpack-js\packages\serpack\src\runtime\require.ts */ "12": (function(__serpack_require__,__non_serpack_require__,module,exports) { Object.defineProperty(exports, "__esModule", {
   value: !0
@@ -955,7 +967,7 @@ for (var t in r) Object.defineProperty(e, t, {
   enumerable: !0,
   get: r[t]
 });
-const n = __serpack_require__("../core/functions"), o = __serpack_require__("./env");
+const n = __serpack_require__('sp:2'), o = __serpack_require__('sp:13');
 function u(e) {
   let r = {};
   function t(t) {
@@ -1019,7 +1031,7 @@ for (var t in r) Object.defineProperty(e, t, {
   enumerable: !0,
   get: r[t]
 });
-const u = __serpack_require__("path"), i = __serpack_require__("./require");
+const u = __serpack_require__("path"), i = __serpack_require__('sp:12');
 function o(e, r, t) {
   return ((r in e) ? Object.defineProperty(e, r, {
     value: t,
@@ -1071,7 +1083,7 @@ function l(e) {
     return t;
   }
 }));
-const e = __serpack_require__("./core");
+const e = __serpack_require__('sp:1');
 function n(e, n, t, r, o, u, i) {
   try {
     var c = e[u](i), s = c.value;

@@ -39,7 +39,7 @@ export interface Plugin {
     context: PluginContextOnCompile
   ): Promisable<CompilerOutput<{ code: string; map?: any }>>;
 
-  onResolve?(context: PluginContextOnResolve): void;
+  onResolve?(context: PluginContextOnResolve): string;
 
   onBundle?(): Promisable<CompilerOutput<void>>;
 }
