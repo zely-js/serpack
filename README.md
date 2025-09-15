@@ -53,6 +53,19 @@ compile('foo/bar.ts', {
 - **TypeScript**: `ts`, `cts`, `mts`, `tsx`
 - **JSON**: `json`
 
+## Architecture
+
+```mermaid
+flowchart TD
+    A[TypeScript Files] --> B[SWC - Transformer]
+    A --> C[OXC - Resolver]
+
+    B --> D[Bundling]
+    C --> D[Bundling]
+
+    D --> E[Optimized Compiler]
+```
+
 ## LICENSE
 
 MIT
