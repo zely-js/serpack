@@ -1,4 +1,4 @@
-import virtual from 'hello';
+import virtual from 'virtual:hello';
 
 console.log(`Hello ${virtual.name}`);
 

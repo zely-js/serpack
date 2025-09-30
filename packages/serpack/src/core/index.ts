@@ -1,6 +1,6 @@
 /* eslint-disable no-loop-func */
 /* eslint-disable default-param-last */
-import { dirname, extname, isAbsolute, join, parse as parsePath, relative } from 'path';
+import { dirname, extname, isAbsolute, join, parse as parsePath } from 'path';
 import { readFileSync, writeFileSync } from 'fs';
 
 import { Options, transform } from '@swc/core';
@@ -8,10 +8,11 @@ import { debug, dev, error, warn } from '@serpack/logger';
 import { parseSync, Node, CallExpression } from 'oxc-parser';
 import { ResolverFactory, NapiResolveOptions, ResolveResult } from 'oxc-resolver';
 import { walk } from 'estree-walker';
-import { generate, GENERATOR } from 'astring';
-import { SourceMapGenerator, SourceMapConsumer } from 'source-map';
+import { generate } from 'astring';
 import { deepmerge } from 'deepmerge-ts';
 import { builtinModules } from 'module';
+import MagicString, { Bundle } from 'magic-string';
+
 import { importToRequire } from './parse';
 import {
   __NON_SERPACK_REQUIRE__,
@@ -165,13 +166,14 @@ class Compiler {
       if (this.parserOptions?.type === 'script') {
         return {
           code: `module.exports=/*export*/${__NON_SERPACK_REQUIRE__}(\`./$\{${__SERPACK_REQUIRE__}("path").relative(__dirname, "${target}").replace(/\\\\/g, '/')}\`);`,
-          map: {},
+          map: null,
         };
       }
 
       if (!this.parserOptions?.type || this.parserOptions?.type === 'module') {
         const loaded = load(target, source);
-        return { code: loaded.code, map: loaded.map };
+        // Assuming load function returns { code, map }
+        return { code: loaded.code, map: loaded.map || null };
       }
 
       error(`unknown options.type: ${this.parserOptions?.type}`);
@@ -189,7 +191,7 @@ class Compiler {
       this.parserOptions.globals.vars.__dirname = JSON.stringify(dirname(filename));
     }
 
-    const output = await transform(
+    const swcOutput = await transform(
       source,
       deepmerge(
         {
@@ -197,8 +199,6 @@ class Compiler {
           isModule: true,
           sourceMaps: true,
           module: {
-            // https://swc.rs/docs/configuration/modules#commonjs
-            // TODO: Add support for other module types
             type: 'commonjs',
             strict: false,
             strictMode: false,
@@ -232,18 +232,26 @@ class Compiler {
       dev(`Module "${filename}" compiled in ${this.getTime()}`);
     }
 
-    for await (const element of this.pluginArray('onCompile')) {
-      const pluginOutput = await element({
+    // Create a MagicString instance to handle transformations and sourcemaps
+    const magicString = new MagicString(swcOutput.code, { filename });
+
+    for await (const onCompile of this.pluginArray('onCompile')) {
+      await onCompile({
         filename: { original: filename, resolved: filename },
-        output,
+        s: magicString,
         source,
       });
-
-      if (pluginOutput && pluginOutput.code) output.code = pluginOutput.code;
-      if (pluginOutput && pluginOutput.map) output.code = pluginOutput.map;
     }
 
-    return { code: output.code, map: JSON.parse(output.map) };
+    return {
+      code: magicString.toString(),
+      map: magicString.generateMap({
+        source: filename,
+        file: `${filename}.map`,
+        includeContent: true,
+        hires: true,
+      }),
+    };
   }
 
   resolve(dirname: string = process.cwd(), to: string, by?: string) {
@@ -348,19 +356,8 @@ class Compiler {
     const parsed = this.parseModule(target, output.code, this.parserOptions);
 
     this.modules[target] = {
-      code: generate(parsed.ast, {
-        generator: {
-          ...GENERATOR,
-
-          // @ts-ignore
-          ParenthesizedExpression(node, state) {
-            state.write('(');
-            this[node.expression.type](node.expression, state);
-            state.write(')');
-          },
-        },
-      }),
-      map: output.map,
+      code: parsed.code,
+      map: parsed.map,
     };
 
     for await (const module of parsed.modules) {
@@ -378,6 +375,7 @@ class Compiler {
 
   parseModule(filename: string, sourcecode?: string, parserOptions?: CompilerOptions) {
     const source = sourcecode ?? readFileSync(filename, 'utf-8');
+    const s = new MagicString(source);
 
     const { program: ast } = parseSync(filename, source, {
       sourceType: 'module',
@@ -390,7 +388,7 @@ class Compiler {
 
     const resolver = this.resolve.bind(this);
 
-    const outputAst = walk(ast, {
+    walk(ast, {
       enter(node) {
         // ** Core **
 
@@ -405,8 +403,8 @@ class Compiler {
           const resolved = resolver(dirname(filename), path, filename);
 
           if (!resolved) {
-            node.callee.name = __SERPACK_REQUIRE__;
-            return node;
+            s.overwrite(node.callee.start, node.callee.end, __SERPACK_REQUIRE__);
+            return;
           }
 
           if (!(resolved in $.id)) {
@@ -416,9 +414,8 @@ class Compiler {
           const id = $.id[resolved];
 
           $.modules.push(path);
-          node.callee.name = __SERPACK_REQUIRE__;
-          node.arguments[0].value = `sp:${id}`;
-          node.arguments[0].raw = `'${node.arguments[0].value}'`;
+          s.overwrite(node.callee.start, node.callee.end, __SERPACK_REQUIRE__);
+          s.overwrite(node.arguments[0].start, node.arguments[0].end, `'sp:${id}'`);
         }
 
         // import statement
@@ -437,7 +434,7 @@ class Compiler {
           $.modules.push(path);
           node.source.value = `sp:${id}`;
 
-          this.replace(importToRequire(node));
+          s.overwrite(node.start, node.end, generate(importToRequire(node)));
         }
       },
       leave(node, parent) {
@@ -446,14 +443,17 @@ class Compiler {
         // options.modifier.caller
 
         if (node.type === 'CallExpression' && parserOptions.modifier?.caller) {
-          node = parserOptions.modifier?.caller(node, parent, { filename }) || node;
-          this.replace(node);
+          const replacement =
+            parserOptions.modifier?.caller(node, parent, { filename }) || node;
+          if (replacement !== node) {
+            s.overwrite(node.start, node.end, generate(replacement));
+          }
         }
       },
     });
 
     if (__DEV__) {
-      writeFileSync('_output.json', JSON.stringify(outputAst));
+      writeFileSync('_output.json', JSON.stringify(ast));
     }
 
     this.id = $.id;
@@ -464,38 +464,28 @@ class Compiler {
     }
 
     return {
-      ast: outputAst,
+      code: s.toString(),
+      map: s.generateMap({
+        source: filename,
+        file: `${filename}.map`,
+        includeContent: true,
+        hires: true,
+      }),
       modules: $.modules,
     };
   }
 
   async bundle() {
     const { modules, target } = this;
-    const codeLines: string[] = [];
-    const addedSources = new Set<string>();
     const enableSourcemap = this.parserOptions.sourcemap;
-    let currentLine = 1;
-    let generator: SourceMapGenerator;
 
     for await (const element of this.pluginArray('onBundle')) {
       await element();
     }
 
-    if (this.parserOptions?.banner) {
-      codeLines.push(this.parserOptions.banner);
-      currentLine += this.parserOptions.banner.split('\n').length;
-    }
+    const bundle = new Bundle();
 
     debug(`modules: ${JSON.stringify(this.id)}`);
-
-    if (enableSourcemap) {
-      const sourcemapRoot =
-        this.parserOptions?.sourcemapOptions?.sourcemapRoot || dirname(this.entry);
-      generator = new SourceMapGenerator({
-        file: 'bundle.js',
-        sourceRoot: sourcemapRoot,
-      });
-    }
 
     let wrapperHeader = [
       '(function(modules) {',
@@ -534,72 +524,35 @@ class Compiler {
       ];
     }
 
-    codeLines.push(...wrapperHeader);
-    currentLine += wrapperHeader.length;
+    bundle.prepend(wrapperHeader.join('\n'));
+
+    // options.banner
+    if (this.parserOptions?.banner) {
+      bundle.prepend(`${this.parserOptions.banner}\n`);
+    }
 
     for await (const [file, module] of Object.entries(modules)) {
-      const banner = `/* ${file} */ "${this.id[file]}": (function(${__SERPACK_REQUIRE__},__non_serpack_require__,module,exports) { `;
-      const moduleCode = `${banner}${module.code} }),`;
-      codeLines.push(moduleCode);
+      if (module) {
+        const banner = `\n/* ${file} */\n"${this.id[file]}": (function(${__SERPACK_REQUIRE__},__non_serpack_require__,module,exports) { `;
+        const footer = '\n}),';
 
-      if (enableSourcemap && Object.keys(module.map).length > 0) {
-        const consumer = await new SourceMapConsumer(module.map);
-        const sourcemapRoot =
-          this.parserOptions?.sourcemapOptions?.sourcemapRoot || dirname(this.entry);
+        const moduleMagicString = new MagicString(module.code);
+        moduleMagicString.prepend(banner);
+        moduleMagicString.append(footer);
 
-        consumer.eachMapping((mapping) => {
-          if (mapping.source) {
-            let originalSource = mapping.source;
-            if (isAbsolute(originalSource)) {
-              originalSource = relative(sourcemapRoot, originalSource);
-            } else {
-              originalSource = relative(
-                sourcemapRoot,
-                join(dirname(file), originalSource)
-              );
-            }
-
-            originalSource = originalSource.replace(/\\/g, '/');
-
-            generator.addMapping({
-              source: originalSource,
-              original: {
-                line: mapping.originalLine,
-                column: mapping.originalColumn,
-              },
-              generated: {
-                line: currentLine,
-                column: mapping.generatedColumn + banner.length,
-              },
-              name: mapping.name,
-            });
-
-            // Add source content if not already added
-            if (!addedSources.has(originalSource)) {
-              const sourceContent = consumer.sourceContentFor(mapping.source, true);
-              if (sourceContent) {
-                generator.setSourceContent(originalSource, sourceContent);
-                addedSources.add(originalSource);
-              }
-            }
-          }
+        bundle.addSource({
+          filename: file,
+          content: moduleMagicString,
         });
-
-        consumer.destroy();
       }
-
-      currentLine += moduleCode.split('\n').length;
     }
 
-    codeLines.push('});');
-    currentLine += 1;
+    bundle.append('\n});');
 
+    // options.footer
     if (this.parserOptions?.footer) {
-      codeLines.push(this.parserOptions.footer);
-      currentLine += this.parserOptions.footer.split('\n').length;
+      bundle.append(`\n${this.parserOptions.footer}`);
     }
-
-    // console.log(generator.toString());
 
     // (DEV) Check module bundle time
     if (__DEV__) {
@@ -607,8 +560,16 @@ class Compiler {
     }
 
     return {
-      code: codeLines.join('\n'),
-      map: enableSourcemap ? generator.toString() : null,
+      code: bundle.toString(),
+      map: enableSourcemap
+        ? bundle
+            .generateMap({
+              file: 'bundle.js',
+              includeContent: true,
+              hires: true,
+            })
+            .toString()
+        : null,
     };
   }
 }
