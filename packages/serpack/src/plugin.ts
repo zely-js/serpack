@@ -1,3 +1,4 @@
+import MagicString from 'magic-string';
 import { CompilerOptions } from './core';
 
 export interface PluginContext {
@@ -10,7 +11,7 @@ export interface PluginContext {
 }
 
 export type PluginContextOnCompile = {
-  output: { code: string; map?: any };
+  s: MagicString;
 } & PluginContext;
 
 type CompilerOutput<T = any> = Promise<T | void> | T | void;

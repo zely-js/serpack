@@ -13,14 +13,16 @@ export default <import('serpack').Options>{
         },
         onCompile(context) {
           console.log('On Compile - ', context.filename.resolved);
-          context.output = {
-            code: `console.log("inserted - ${context.filename.original.replace(
-              /\\/g,
-              '\\\\'
-            )}");${context.output.code}`,
-          };
-
-          return context.output;
+          console.log(`Compiled: "${context.s.toString()}"`);
+          console.log(
+            context.s.prepend(
+              `console.log("inserted - ${context.filename.original.replace(
+                /\\/g,
+                '\\\\'
+              )}");`
+            )
+          );
+          console.log(`Compiled: "${context.s.toString()}"`);
         },
       },
     ],

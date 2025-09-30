@@ -73,7 +73,8 @@ app.action(async ({ options: command }) => {
       if (!command.output) {
         rmSync(target);
       }
-      throw new Error(e);
+
+      console.error(e);
     }
   }
 

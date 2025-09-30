@@ -11,24 +11,24 @@
   }
   module.exports=__serpack_require__("sp:0");
 })({
-/* D:\serpack-js\fixtures\sourcemap\index.ts */
-"0": (function(__serpack_require__,__non_serpack_require__,module,exports) { var e;
+/* D:\serpack-js\fixtures\sourcemap-plugin\index.ts */
+"0": (function(__serpack_require__,__non_serpack_require__,module,exports) { "a";var e;
 Object.defineProperty(exports, "__esModule", {
     value: !0
 });
-const r = __serpack_require__('sp:1'), o = __serpack_require__('sp:2'), t = (e = __serpack_require__('sp:3')) && e.__esModule ? e : {
+const r = __serpack_require__('sp:1'), o = __serpack_require__('sp:2'), s = (e = __serpack_require__('sp:3')) && e.__esModule ? e : {
     default: e
 };
 try {
-    console.log(`JSON Data: ${JSON.stringify(t.default)}!`), (0, o.somethingWrong)();
+    console.log(`JSON Data: ${JSON.stringify(s.default)}!`), (0, o.somethingWrong)();
 } catch (e) {
-    (0, r.emit)(e, './fixtures/sourcemap/compiled.js.map');
+    (0, r.emit)(e, './fixtures/sourcemap-plugin/compiled.js.map');
 }
 
 }),
 
 /* D:\serpack-js\fixtures\sourcemap\comsumer\index.ts */
-"1": (function(__serpack_require__,__non_serpack_require__,module,exports) { Object.defineProperty(exports, "__esModule", {
+"1": (function(__serpack_require__,__non_serpack_require__,module,exports) { "a";Object.defineProperty(exports, "__esModule", {
     value: !0
 });
 var e = exports, n = {
@@ -103,7 +103,7 @@ function p() {
 }),
 
 /* D:\serpack-js\fixtures\sourcemap\comsumer\parse.ts */
-"4": (function(__serpack_require__,__non_serpack_require__,module,exports) { function e(e) {
+"4": (function(__serpack_require__,__non_serpack_require__,module,exports) { "a";function e(e) {
     var r;
     let t = null === (r = e.stack) || void 0 === r ? void 0 : r.split('\n').slice(1);
     return null == t ? void 0 : t.map((e)=>{
@@ -126,8 +126,8 @@ Object.defineProperty(exports, "__esModule", {
 
 }),
 
-/* D:\serpack-js\fixtures\sourcemap\something-wrong.ts */
-"2": (function(__serpack_require__,__non_serpack_require__,module,exports) { function e() {
+/* D:\serpack-js\fixtures\sourcemap-plugin\something-wrong.ts */
+"2": (function(__serpack_require__,__non_serpack_require__,module,exports) { "a";function e() {
     throw Error('Something is wrong!');
 }
 Object.defineProperty(exports, "__esModule", {
